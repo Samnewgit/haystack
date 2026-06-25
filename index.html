@@ -8,24 +8,24 @@
 <meta property="og:title" content="Haystack — LessWrong Archive Search">
 <meta property="og:description" content="Search 49,000+ LessWrong posts by karma, author, year, topic and keyword. Find the best rationality, AI safety, and philosophy writing ever published.">
 <meta property="og:type" content="website">
-<meta name="theme-color" content="#16624D">
+<meta name="theme-color" content="#CC0000">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#EBEEE9; --raised:#F7F8F5; --raised-2:#FDFEFC;
-  --ink:#1E2522; --ink-soft:#5A645C; --ink-faint:#8A938B;
-  --line:#D4D9D1; --line-soft:#E1E5DE;
-  --pine:#16624D; --pine-deep:#0E4636; --pine-tint:#E2EEE8;
-  --focus:#1d7a5f;
+  --paper:#FFFFFF; --raised:#F4F4F4; --raised-2:#FAFAFA;
+  --ink:#111111; --ink-soft:#555555; --ink-faint:#999999;
+  --line:#E0E0E0; --line-soft:#EBEBEB;
+  --pine:#CC0000; --pine-deep:#990000; --pine-tint:#FFF0F0;
+  --focus:#CC0000;
   --serif:'Spectral',Georgia,serif;
   --sans:'IBM Plex Sans',system-ui,sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,monospace;
 }
 *{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+html{height:100%;background:#D8D8D8}
+body{height:100%;max-width:1400px;margin:0 auto;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;box-shadow:0 0 60px rgba(0,0,0,.12)}
 button{font-family:inherit;cursor:pointer}
 input,select{font-family:inherit}
 ::selection{background:var(--pine-tint)}
@@ -33,16 +33,16 @@ input,select{font-family:inherit}
 
 /* ---------- Dark mode ---------- */
 [data-theme="dark"]{
-  --paper:#141a17; --raised:#1c2320; --raised-2:#222924;
-  --ink:#e0e8dc; --ink-soft:#a2b5a5; --ink-faint:#728075;
-  --line:#2e3a32; --line-soft:#273029;
-  --pine:#2ec48e; --pine-deep:#24a878; --pine-tint:#1a3328;
-  --focus:#2ec48e;
+  background:#000000;
+  --paper:#0D0D0D; --raised:#161616; --raised-2:#1E1E1E;
+  --ink:#F2F2F2; --ink-soft:#BBBBBB; --ink-faint:#888888;
+  --line:#2A2A2A; --line-soft:#222222;
+  --pine:#FF2222; --pine-deep:#CC0000; --pine-tint:#2A0000;
+  --focus:#FF2222;
 }
-/* elements that need explicit dark overrides */
-[data-theme="dark"] .overlay{background:rgba(0,0,0,.65);}
+[data-theme="dark"] .overlay{background:rgba(0,0,0,.75);}
 [data-theme="dark"] .chip,[data-theme="dark"] .cat-tag{color:var(--pine);}
-[data-theme="dark"] .karma small{color:rgba(255,255,255,.6);}
+[data-theme="dark"] .karma small{color:rgba(255,255,255,.55);}
 [data-theme="dark"] .searchbox input::placeholder{color:var(--ink-faint);}
 [data-theme="dark"] select option{background:var(--raised-2);color:var(--ink);}
 [data-theme="dark"] .aulist .arow:hover{background:var(--raised);}
@@ -62,7 +62,7 @@ input,select{font-family:inherit}
 .load-err code{font-family:var(--mono);background:var(--raised);padding:2px 6px;border-radius:3px;font-size:12px}
 
 /* ---------- App shell ---------- */
-#app{display:none;grid-template-rows:auto auto 1fr;height:100vh;overflow:hidden}
+#app{display:none;grid-template-rows:auto 1fr;height:100vh;overflow:hidden}
 header.topbar{display:flex;align-items:center;gap:18px;padding:11px 18px;background:var(--raised);border-bottom:1px solid var(--line)}
 .topbar .mark{font-family:var(--serif);font-weight:600;font-size:20px;letter-spacing:-.01em}
 .topbar .mark em{font-style:italic;color:var(--pine)}
@@ -71,18 +71,6 @@ header.topbar{display:flex;align-items:center;gap:18px;padding:11px 18px;backgro
 .topbar .spacer{flex:1}
 .ghost-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:6px 12px;border-radius:6px;font-size:12.5px;transition:.15s}
 .ghost-btn:hover{border-color:var(--pine);color:var(--pine)}
-
-/* terrain histogram */
-.terrain{background:var(--raised);border-bottom:1px solid var(--line);padding:8px 18px 10px}
-.terrain-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
-.terrain-head .lbl{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
-.terrain-head .hint{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
-.hist{display:flex;align-items:flex-end;gap:1px;height:46px;user-select:none;cursor:crosshair}
-.hist .bar{flex:1;background:var(--pine);opacity:.34;min-height:1px;transition:opacity .1s;border-radius:1px 1px 0 0}
-.hist .bar.in{opacity:.85}
-.hist .bar:hover{opacity:1}
-.hist-axis{display:flex;gap:1px;font-family:var(--mono);font-size:9px;color:var(--ink-faint);margin-top:3px}
-.hist-axis span{flex:1;text-align:center;overflow:hidden;white-space:nowrap;}
 
 /* body split */
 .split{display:grid;grid-template-columns:286px 1fr;overflow:hidden}
@@ -117,7 +105,7 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 .searchbox .mag{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink-faint)}
 .searchmeta{display:flex;justify-content:space-between;align-items:center;margin-top:9px;font-size:12px;color:var(--ink-soft)}
 .searchmeta .count b{color:var(--ink);font-family:var(--mono);font-weight:500}
-.fuzzynote{font-family:var(--mono);font-size:11px;color:var(--amber,#a8702c)}
+.fuzzynote{font-family:var(--mono);font-size:11px;color:var(--pine)}
 
 /* results */
 .results{padding:6px 22px 0}
@@ -127,7 +115,7 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 .karma small{display:block;font-size:9px;color:var(--ink-faint);font-weight:400;margin-top:1px}
 .card .body .title{font-family:var(--serif);font-size:16.5px;font-weight:500;color:var(--ink);text-decoration:none;line-height:1.3}
 .card .body .title:hover{color:var(--pine);text-decoration:underline}
-.card .body .title mark{background:#f6e6b8;color:inherit;padding:0 1px;border-radius:2px}
+.card .body .title mark{background:var(--pine-tint);color:inherit;padding:0 1px;border-radius:2px}
 .meta{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);margin-top:5px;display:flex;flex-wrap:wrap;gap:4px 12px}
 .meta .author{color:var(--ink-soft)}
 .meta .alink{cursor:pointer}
@@ -218,7 +206,7 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 /* ---------- Personal tags ---------- */
 .ptags-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;align-items:center}
 .ptag{background:transparent;border:1.5px dashed #b0bab2;color:var(--ink-soft);padding:2px 8px;border-radius:20px;font-size:11px;font-family:var(--sans);cursor:pointer;transition:.12s;line-height:1.4}
-.ptag:hover{border-color:#c04040;color:#c04040;background:#fff5f5}
+.ptag:hover{border-color:var(--pine);color:var(--pine);background:var(--pine-tint)}
 .ptag-add{background:transparent;border:1.5px dashed var(--line);color:var(--ink-faint);padding:2px 8px;border-radius:20px;font-size:11px;font-family:var(--sans);cursor:pointer;transition:.12s;line-height:1.4}
 .ptag-add:hover{border-color:var(--pine);color:var(--pine)}
 .ptag-input{border:1.5px solid var(--pine);border-radius:20px;padding:2px 9px;font-size:11px;font-family:var(--sans);color:var(--ink);outline:none;width:100px;line-height:1.4}
@@ -248,15 +236,6 @@ input[type=range]{width:100%;accent-color:var(--pine)}
     <button class="theme-btn" id="themeBtn" title="Toggle dark mode">🌙</button>
     <button class="filter-toggle" id="filterToggle">Filters <span class="filter-badge" id="filterBadge">0</span></button>
   </header>
-
-  <div class="terrain">
-    <div class="terrain-head">
-      <span class="lbl">Terrain · posts by year</span>
-      <span class="hint" id="terrainHint">drag across bars to select an era</span>
-    </div>
-    <div class="hist" id="hist"></div>
-    <div class="hist-axis" id="histAxis"></div>
-  </div>
 
   <div class="qfilters" id="qfilters">
     <span class="qf-lbl">Quick:</span>
@@ -887,7 +866,6 @@ function update(){
 
   VIEW=out;
   RENDER_LIMIT=100;
-  renderHist();
   renderResults();
   $('#resultCount').textContent=out.length.toLocaleString();
   $('#readout').innerHTML=`<b>${out.length.toLocaleString()}</b> in view · <b>${ROWS.length.toLocaleString()}</b> total · needle-to-haystack <b>${(100*out.length/ROWS.length).toFixed(1)}%</b>`;
@@ -900,12 +878,11 @@ function update(){
 
 /* ---------- Render: results ---------- */
 function karmaStyle(k){
-  // amber→rust heat scale, data-driven
-  let bg='#EDEFEA',fg='#5A645C';
-  if(k>=400){bg='#9c3a1e';fg='#fff';}
-  else if(k>=150){bg='#c2611f';fg='#fff';}
-  else if(k>=50){bg='#d99a3c';fg='#3a2a10';}
-  else if(k>=10){bg='#ecd9a8';fg='#5a4a22';}
+  let bg='#F0F0F0',fg='#999999';
+  if(k>=400){bg='#7A0000';fg='#ffffff';}
+  else if(k>=150){bg='#CC0000';fg='#ffffff';}
+  else if(k>=50){bg='#FF7777';fg='#5A0000';}
+  else if(k>=10){bg='#FFD5D5';fg='#880000';}
   return `background:${bg};color:${fg}`;
 }
 function hl(title,tok){
@@ -948,48 +925,6 @@ function renderResults(){
   if(VIEW.length>RENDER_LIMIT) html+=`<button class="showmore" id="showMore">Show ${Math.min(100,VIEW.length-RENDER_LIMIT)} more · ${(VIEW.length-RENDER_LIMIT).toLocaleString()} hidden</button>`;
   box.innerHTML=html;
 }
-
-/* ---------- Render: terrain histogram ---------- */
-function renderHist(){
-  const years=[...new Set(ROWS.map(r=>r.Year).filter(Boolean))].sort((a,b)=>a-b);
-  const counts={}; years.forEach(y=>counts[y]=0);
-  VIEW.forEach(o=>{if(counts[o.Year]!=null)counts[o.Year]++;});
-  const max=Math.max(1,...Object.values(counts));
-  const yMin=+$('#yearMin').value, yMax=+$('#yearMax').value;
-
-  // bars
-  const hist=$('#hist'); hist.innerHTML='';
-  years.forEach(y=>{
-    const b=document.createElement('div');
-    b.className='bar'+(y>=yMin&&y<=yMax?' in':'');
-    b.style.height=(6+94*counts[y]/max)+'%';
-    b.title=`${y}: ${counts[y].toLocaleString()} posts`;
-    b.dataset.year=y;
-    hist.appendChild(b);
-  });
-
-  // axis — one label per year, abbreviated to 2 digits ('09 '10 …)
-  const axis=$('#histAxis'); axis.innerHTML='';
-  years.forEach(y=>{
-    const s=document.createElement('span');
-    s.textContent=String(y).slice(2);   // '09', '10', '25' …
-    s.title=String(y);
-    s.style.cursor='pointer';
-    s.onclick=()=>{ $('#yearMin').value=y; $('#yearMax').value=y; update(); };
-    axis.appendChild(s);
-  });
-}
-
-/* ---------- Histogram drag-to-select ---------- */
-(function(){
-  let dragging=false,startY=null;
-  const hist=$('#hist');
-  function yearAt(e){const el=document.elementFromPoint(e.clientX,e.clientY);return el&&el.dataset&&el.dataset.year?+el.dataset.year:null;}
-  hist.addEventListener('pointerdown',e=>{const y=yearAt(e);if(y){dragging=true;startY=y;hist.setPointerCapture(e.pointerId);}});
-  hist.addEventListener('pointermove',e=>{if(!dragging)return;const y=yearAt(e);if(y){applyYears(Math.min(startY,y),Math.max(startY,y));}});
-  hist.addEventListener('pointerup',e=>{if(dragging&&startY){const y=yearAt(e)||startY;applyYears(Math.min(startY,y),Math.max(startY,y));}dragging=false;startY=null;});
-  function applyYears(a,b){$('#yearMin').value=a;$('#yearMax').value=b;update();}
-})();
 
 /* ---------- Bookmarks ---------- */
 function toggleBookmark(id){

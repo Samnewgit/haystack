@@ -33,12 +33,21 @@ input,select{font-family:inherit}
 
 /* ---------- Dark mode ---------- */
 [data-theme="dark"]{
-  --paper:#141a17; --raised:#1c2320; --raised-2:#202720;
-  --ink:#d5dbd2; --ink-soft:#8a9e8d; --ink-faint:#556359;
-  --line:#2a342e; --line-soft:#232c27;
-  --pine:#2aaa80; --pine-deep:#1d8f69; --pine-tint:#1a3028;
-  --focus:#2aaa80;
+  --paper:#141a17; --raised:#1c2320; --raised-2:#222924;
+  --ink:#e0e8dc; --ink-soft:#a2b5a5; --ink-faint:#728075;
+  --line:#2e3a32; --line-soft:#273029;
+  --pine:#2ec48e; --pine-deep:#24a878; --pine-tint:#1a3328;
+  --focus:#2ec48e;
 }
+/* elements that need explicit dark overrides */
+[data-theme="dark"] .overlay{background:rgba(0,0,0,.65);}
+[data-theme="dark"] .chip,[data-theme="dark"] .cat-tag{color:var(--pine);}
+[data-theme="dark"] .karma small{color:rgba(255,255,255,.6);}
+[data-theme="dark"] .searchbox input::placeholder{color:var(--ink-faint);}
+[data-theme="dark"] select option{background:var(--raised-2);color:var(--ink);}
+[data-theme="dark"] .aulist .arow:hover{background:var(--raised);}
+[data-theme="dark"] .cooc .crow:hover{background:var(--raised);}
+[data-theme="dark"] .arow-hdr{background:var(--raised-2)!important;}
 
 /* ---------- Loading / error screen ---------- */
 #loadScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--paper);z-index:50;flex-direction:column;gap:0}
@@ -72,7 +81,8 @@ header.topbar{display:flex;align-items:center;gap:18px;padding:11px 18px;backgro
 .hist .bar{flex:1;background:var(--pine);opacity:.34;min-height:1px;transition:opacity .1s;border-radius:1px 1px 0 0}
 .hist .bar.in{opacity:.85}
 .hist .bar:hover{opacity:1}
-.hist-axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--ink-faint);margin-top:3px}
+.hist-axis{display:flex;gap:1px;font-family:var(--mono);font-size:9px;color:var(--ink-faint);margin-top:3px}
+.hist-axis span{flex:1;text-align:center;overflow:hidden;white-space:nowrap;}
 
 /* body split */
 .split{display:grid;grid-template-columns:286px 1fr;overflow:hidden}
@@ -85,7 +95,7 @@ main.results-pane{overflow-y:auto;padding:0 0 80px}
 .field{margin-bottom:11px}
 .field label{display:block;font-size:11.5px;color:var(--ink-soft);margin-bottom:4px}
 .field .val{font-family:var(--mono);color:var(--ink);font-weight:500}
-select,.txt{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);font-size:13px}
+select,.txt{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--raised-2);color:var(--ink);font-size:13px}
 input[type=range]{width:100%;accent-color:var(--pine)}
 .row2{display:flex;gap:8px}
 .row2>*{flex:1}
@@ -95,14 +105,14 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 .chips{display:flex;flex-wrap:wrap;gap:5px}
 .chip{background:var(--pine-tint);color:var(--pine-deep);border:none;padding:4px 9px;border-radius:20px;font-size:11.5px;transition:.12s}
 .chip:hover{background:var(--pine);color:#fff}
-.disc-btn{width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12.5px;color:var(--ink);transition:.12s;display:flex;justify-content:space-between;align-items:center}
+.disc-btn{width:100%;text-align:left;background:var(--raised-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12.5px;color:var(--ink);transition:.12s;display:flex;justify-content:space-between;align-items:center}
 .disc-btn:hover{border-color:var(--pine);color:var(--pine)}
 .disc-btn span.k{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
 
 /* search bar */
 .searchwrap{position:sticky;top:0;z-index:5;background:var(--paper);padding:14px 22px 10px;border-bottom:1px solid var(--line-soft)}
 .searchbox{position:relative}
-.searchbox input{width:100%;padding:13px 15px 13px 40px;font-size:16px;border:1px solid var(--line);border-radius:9px;background:#fff;font-family:var(--serif)}
+.searchbox input{width:100%;padding:13px 15px 13px 40px;font-size:16px;border:1px solid var(--line);border-radius:9px;background:var(--raised-2);color:var(--ink);font-family:var(--serif)}
 .searchbox input:focus{border-color:var(--pine)}
 .searchbox .mag{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink-faint)}
 .searchmeta{display:flex;justify-content:space-between;align-items:center;margin-top:9px;font-size:12px;color:var(--ink-soft)}
@@ -128,7 +138,7 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 .icon-btn:hover{border-color:var(--pine);color:var(--pine)}
 .icon-btn.on{background:var(--pine);border-color:var(--pine);color:#fff}
 .icon-btn.mlt{font-size:12px}
-.showmore{display:block;margin:18px auto 0;background:#fff;border:1px solid var(--line);border-radius:7px;padding:10px 22px;color:var(--ink-soft);font-size:13px}
+.showmore{display:block;margin:18px auto 0;background:var(--raised-2);border:1px solid var(--line);border-radius:7px;padding:10px 22px;color:var(--ink-soft);font-size:13px}
 .showmore:hover{border-color:var(--pine);color:var(--pine)}
 .empty{text-align:center;color:var(--ink-faint);padding:70px 20px;font-size:14px}
 .empty b{color:var(--ink-soft)}
@@ -169,6 +179,13 @@ input[type=range]{width:100%;accent-color:var(--pine)}
   .qf-lbl{display:none}
   .clear-btn{display:none}
 }
+
+/* ---------- Author browse panel ---------- */
+.au-search-wrap{padding:10px 12px 8px;position:sticky;top:0;background:var(--raised-2);z-index:3;border-bottom:1px solid var(--line-soft)}
+.au-search-wrap .txt{margin:0}
+.au-letter-hdr{padding:5px 12px 3px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--pine);background:var(--raised);border-bottom:1px solid var(--line-soft);position:sticky;top:48px;z-index:2}
+.arow-hdr{background:var(--raised-2);font-size:10.5px;}
+.au-count{font-family:var(--mono);font-size:11px;color:var(--ink-faint);padding:6px 12px 2px;text-align:right}
 
 /* ---------- Dark-mode toggle btn ---------- */
 .theme-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:5px 9px;border-radius:6px;font-size:15px;line-height:1;transition:.15s}
@@ -238,7 +255,7 @@ input[type=range]{width:100%;accent-color:var(--pine)}
       <span class="hint" id="terrainHint">drag across bars to select an era</span>
     </div>
     <div class="hist" id="hist"></div>
-    <div class="hist-axis"><span id="axisMin"></span><span id="axisMax"></span></div>
+    <div class="hist-axis" id="histAxis"></div>
   </div>
 
   <div class="qfilters" id="qfilters">
@@ -297,6 +314,7 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 
       <div class="grp">
         <h3>Discover</h3>
+        <button class="disc-btn" id="authorsBtnSide">Browse authors A→Z <span class="k">searchable</span></button>
         <button class="disc-btn" id="surpriseBtn">Surprise me <span class="k">random ≥ floor</span></button>
         <button class="disc-btn" id="tagCoocBtn">Tag neighbours <span class="k">co-occurrence</span></button>
         <button class="disc-btn" id="exportBtn">Export this view <span class="k">.csv</span></button>
@@ -755,7 +773,6 @@ function buildControls(){
   yMin.innerHTML=''; yMax.innerHTML='';
   years.forEach(y=>{yMin.add(new Option(y,y));yMax.add(new Option(y,y));});
   yMin.value=years[0]; yMax.value=years[years.length-1];
-  $('#axisMin').textContent=years[0]; $('#axisMax').textContent=years[years.length-1];
 
   const maxK=Math.max(...ROWS.map(r=>r.Karma));
   $('#karmaFloor').max=Math.min(800,maxK);
@@ -939,14 +956,27 @@ function renderHist(){
   VIEW.forEach(o=>{if(counts[o.Year]!=null)counts[o.Year]++;});
   const max=Math.max(1,...Object.values(counts));
   const yMin=+$('#yearMin').value, yMax=+$('#yearMax').value;
+
+  // bars
   const hist=$('#hist'); hist.innerHTML='';
   years.forEach(y=>{
     const b=document.createElement('div');
     b.className='bar'+(y>=yMin&&y<=yMax?' in':'');
     b.style.height=(6+94*counts[y]/max)+'%';
-    b.title=`${y}: ${counts[y]} posts`;
+    b.title=`${y}: ${counts[y].toLocaleString()} posts`;
     b.dataset.year=y;
     hist.appendChild(b);
+  });
+
+  // axis — one label per year, abbreviated to 2 digits ('09 '10 …)
+  const axis=$('#histAxis'); axis.innerHTML='';
+  years.forEach(y=>{
+    const s=document.createElement('span');
+    s.textContent=String(y).slice(2);   // '09', '10', '25' …
+    s.title=String(y);
+    s.style.cursor='pointer';
+    s.onclick=()=>{ $('#yearMin').value=y; $('#yearMax').value=y; update(); };
+    axis.appendChild(s);
   });
 }
 
@@ -988,15 +1018,63 @@ function moreLikeThis(o){
 /* ---------- Discovery: author deep-dive ---------- */
 function authorDeepDive(){
   const agg={};
-  ROWS.forEach(r=>{const a=r.Author||'—';(agg[a]=agg[a]||{n:0,k:0}); agg[a].n++; agg[a].k+=r.Karma;});
-  const rows=Object.entries(agg).filter(([,v])=>v.n>=5)
-    .map(([a,v])=>({a,n:v.n,avg:v.k/v.n,tot:v.k}))
-    .sort((x,y)=>y.avg-x.avg).slice(0,80);
-  const body=`<div class="aulist">
-    <div class="arow"><span class="ahdr">Author</span><span class="ahdr anum">posts</span><span class="ahdr anum">avg karma</span><span class="ahdr anum">total</span></div>
-    ${rows.map(r=>`<div class="arow"><span class="aname" data-au="${esc(r.a)}">${esc(r.a)}</span><span class="anum">${r.n}</span><span class="anum">${r.avg.toFixed(0)}</span><span class="anum">${r.tot.toLocaleString()}</span></div>`).join('')}
-  </div>`;
-  openPanel('Authors by average karma','min. 5 posts · click a name to filter',body);
+  ROWS.forEach(r=>{const a=r.Author||'—'; if(!agg[a])agg[a]={n:0,k:0}; agg[a].n++; agg[a].k+=r.Karma;});
+
+  // all authors, A → Z
+  const all=Object.entries(agg)
+    .map(([a,v])=>({a, n:v.n, avg:Math.round(v.k/v.n), tot:v.k}))
+    .sort((x,y)=>x.a.localeCompare(y.a, undefined, {sensitivity:'base'}));
+
+  // group by first letter
+  const groups={};
+  all.forEach(r=>{
+    const ch=r.a.replace(/^[^A-Za-z]*/,'')[0];  // skip leading non-alpha
+    const key=ch? ch.toUpperCase() : '#';
+    (groups[key]=groups[key]||[]).push(r);
+  });
+
+  function rowsHTML(rs){
+    return rs.map(r=>`<div class="arow"><span class="aname" data-au="${esc(r.a)}">${esc(r.a)}</span><span class="anum">${r.n}</span><span class="anum">${r.avg.toLocaleString()}</span><span class="anum">${r.tot.toLocaleString()}</span></div>`).join('');
+  }
+
+  const lettersHTML=Object.keys(groups).sort().map(letter=>
+    `<div class="au-letter-hdr" data-letter="${letter}">${letter}</div>`+rowsHTML(groups[letter])
+  ).join('');
+
+  const body=`
+    <div class="au-search-wrap">
+      <input class="txt" id="auSearch" placeholder="Search ${all.length.toLocaleString()} authors…" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="aulist" id="auList">
+      <div class="arow arow-hdr"><span class="ahdr">Author</span><span class="ahdr anum">posts</span><span class="ahdr anum">avg ★</span><span class="ahdr anum">total ★</span></div>
+      ${lettersHTML}
+    </div>`;
+
+  openPanel('Browse authors','A → Z · click a name to filter by author',body);
+
+  // wire search after panel renders
+  requestAnimationFrame(()=>{
+    const inp=$('#auSearch'); if(!inp) return;
+    inp.focus();
+    inp.addEventListener('input',()=>{
+      const q=inp.value.trim().toLowerCase();
+      const list=$('#auList'); if(!list) return;
+      // show/hide rows
+      list.querySelectorAll('.arow:not(.arow-hdr)').forEach(row=>{
+        const nm=row.querySelector('.aname');
+        if(nm) row.style.display=(!q||nm.textContent.toLowerCase().includes(q))?'':'none';
+      });
+      // hide letter headers whose entire group is hidden
+      list.querySelectorAll('.au-letter-hdr').forEach(hdr=>{
+        let sib=hdr.nextElementSibling, vis=false;
+        while(sib && !sib.classList.contains('au-letter-hdr')){
+          if(sib.style.display!=='none') vis=true;
+          sib=sib.nextElementSibling;
+        }
+        hdr.style.display=vis?'':'none';
+      });
+    });
+  });
 }
 
 /* ---------- Discovery: tag co-occurrence ---------- */
@@ -1083,6 +1161,7 @@ $('#authorFilter').addEventListener('input',()=>{clearTimeout(deb);deb=setTimeou
 
 $('#surpriseBtn').onclick=surprise;
 $('#authorsBtn').onclick=authorDeepDive;
+$('#authorsBtnSide').onclick=authorDeepDive;
 $('#tagCoocBtn').onclick=tagCooc;
 $('#exportBtn').onclick=()=>download('haystack-view.csv',toCSV(VIEW));
 $('#exportBmBtn').onclick=()=>download('haystack-bookmarks.csv',toCSV(ROWS.filter(r=>BOOKMARKS.has(r.ID))));

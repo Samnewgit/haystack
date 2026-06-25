@@ -96,6 +96,24 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 .disc-btn{width:100%;text-align:left;background:var(--raised-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12.5px;color:var(--ink);transition:.12s;display:flex;justify-content:space-between;align-items:center}
 .disc-btn:hover{border-color:var(--pine);color:var(--pine)}
 .disc-btn span.k{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+/* Quality pills */
+.q-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.qp{border:1.5px solid var(--line);background:transparent;color:var(--ink-soft);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;transition:.15s;white-space:nowrap}
+.qp:hover{border-color:var(--pine);color:var(--pine)}
+.qp.active{background:var(--pine);color:#fff;border-color:var(--pine)}
+.q-hint{font-size:11px;color:var(--ink-faint);margin-top:5px;font-family:var(--mono);min-height:14px}
+/* Era buttons */
+.era-list{display:flex;flex-direction:column;gap:3px;margin-top:7px}
+.era-btn{text-align:left;border:1.5px solid var(--line);background:transparent;color:var(--ink-soft);padding:7px 10px;border-radius:6px;font-size:12px;cursor:pointer;transition:.15s;line-height:1.25;width:100%}
+.era-btn:hover{border-color:var(--pine);color:var(--ink);background:var(--pine-tint)}
+.era-btn.active{border-color:var(--pine);background:var(--pine-tint);color:var(--ink)}
+.era-yr{display:block;font-family:var(--mono);font-size:10px;color:var(--ink-faint);margin-top:2px}
+.era-btn.active .era-yr{color:var(--pine)}
+/* Sort pills */
+.sort-list{display:flex;flex-direction:column;gap:2px;margin-top:7px}
+.sp{text-align:left;border:1px solid transparent;background:transparent;color:var(--ink-soft);padding:5px 9px;border-radius:5px;font-size:12.5px;cursor:pointer;transition:.12s;width:100%}
+.sp:hover{background:var(--raised);color:var(--ink)}
+.sp.active{background:var(--pine-tint);color:var(--pine);font-weight:600}
 
 /* search bar */
 .searchwrap{position:sticky;top:0;z-index:5;background:var(--paper);padding:14px 22px 10px;border-bottom:1px solid var(--line-soft)}
@@ -245,42 +263,70 @@ input[type=range]{width:100%;accent-color:var(--pine)}
   <div class="sidebar-backdrop" id="backdrop"></div>
   <div class="split">
     <aside class="controls">
+
       <div class="grp">
-        <h3>Filter</h3>
-        <div class="field">
-          <label>Minimum karma · <span class="val" id="karmaVal">0</span></label>
-          <input type="range" id="karmaFloor" min="0" max="500" value="0" step="5">
+        <h3>Discover</h3>
+        <button class="disc-btn" id="surpriseBtn">Surprise me <span class="k">random high-karma</span></button>
+        <button class="disc-btn" id="authorsBtnSide">Browse authors A→Z <span class="k">searchable</span></button>
+        <button class="disc-btn" id="tagCoocBtn">Tag neighbours <span class="k">co-occurrence</span></button>
+        <button class="disc-btn" id="exportBtn">Export this view <span class="k">.csv</span></button>
+        <button class="disc-btn" id="exportBmBtn">Export bookmarks <span class="k">.csv</span></button>
+      </div>
+
+      <div class="grp">
+        <h3>Quality</h3>
+        <div class="q-pills">
+          <button class="qp active" data-k="0">All</button>
+          <button class="qp" data-k="25">Noticed</button>
+          <button class="qp" data-k="75">Good</button>
+          <button class="qp" data-k="200">Great</button>
+          <button class="qp" data-k="500">Essential</button>
         </div>
-        <div class="field">
-          <label>Year range</label>
-          <div class="row2">
-            <select id="yearMin"></select>
-            <select id="yearMax"></select>
-          </div>
+        <div class="q-hint" id="qHint">All posts, no karma floor</div>
+        <input type="hidden" id="karmaFloor" value="0">
+      </div>
+
+      <div class="grp">
+        <h3>Era</h3>
+        <div class="era-list">
+          <button class="era-btn active" data-y1="" data-y2="">All time<span class="era-yr">2006 – present</span></button>
+          <button class="era-btn" data-y1="2006" data-y2="2010">Founding era<span class="era-yr">2006 – 2010 · Sequences, OB spinoff</span></button>
+          <button class="era-btn" data-y1="2011" data-y2="2014">Classic LW<span class="era-yr">2011 – 2014 · Peak community</span></button>
+          <button class="era-btn" data-y1="2015" data-y2="2017">Diaspora<span class="era-yr">2015 – 2017 · SSC rise, fragmentation</span></button>
+          <button class="era-btn" data-y1="2018" data-y2="2020">Renaissance<span class="era-yr">2018 – 2020 · LW 2.0, EA expansion</span></button>
+          <button class="era-btn" data-y1="2021" data-y2="2099">AI focus<span class="era-yr">2021 – now · Alignment urgency, GPT era</span></button>
         </div>
-        <div class="field">
-          <label>Minimum length · <span class="val" id="wcVal">0</span> words</label>
-          <input type="range" id="wcFloor" min="0" max="10000" value="0" step="250">
-        </div>
-        <div class="field">
-          <label>Theme</label>
-          <select id="catSel"><option value="">All themes</option></select>
-        </div>
-        <div class="field">
-          <label>Author</label>
-          <input class="txt" id="authorFilter" list="authorList" placeholder="any author">
-          <datalist id="authorList"></datalist>
-        </div>
-        <div class="field">
-          <label>Tag</label>
-          <select id="tagSel"><option value="">any tag</option></select>
-        </div>
-        <label class="chk"><input type="checkbox" id="bmOnly"> Bookmarked only (<span id="bmCount">0</span>) <span style="font-size:10px;color:var(--ink-faint)">· this device</span></label>
+        <select id="yearMin" style="display:none"></select>
+        <select id="yearMax" style="display:none"></select>
+      </div>
+
+      <div class="grp">
+        <h3>Theme</h3>
+        <select id="catSel"><option value="">All themes</option></select>
+      </div>
+
+      <div class="grp">
+        <h3>Author</h3>
+        <input class="txt" id="authorFilter" list="authorList" placeholder="any author">
+        <datalist id="authorList"></datalist>
+      </div>
+
+      <div class="grp">
+        <h3>Tag</h3>
+        <select id="tagSel"><option value="">any tag</option></select>
       </div>
 
       <div class="grp">
         <h3>Sort</h3>
-        <select id="sortSel">
+        <div class="sort-list">
+          <button class="sp active" data-sort="relevance">Best match</button>
+          <button class="sp" data-sort="karma">Top karma</button>
+          <button class="sp" data-sort="pct">Year percentile rank</button>
+          <button class="sp" data-sort="date_desc">Newest first</button>
+          <button class="sp" data-sort="date_asc">Oldest first</button>
+          <button class="sp" data-sort="comments">Most discussed</button>
+        </div>
+        <select id="sortSel" style="display:none">
           <option value="relevance">Best match (when searching)</option>
           <option value="karma">Karma — high to low</option>
           <option value="pct">Karma percentile in its year</option>
@@ -292,16 +338,11 @@ input[type=range]{width:100%;accent-color:var(--pine)}
       </div>
 
       <div class="grp">
-        <h3>Discover</h3>
-        <button class="disc-btn" id="authorsBtnSide">Browse authors A→Z <span class="k">searchable</span></button>
-        <button class="disc-btn" id="surpriseBtn">Surprise me <span class="k">random ≥ floor</span></button>
-        <button class="disc-btn" id="tagCoocBtn">Tag neighbours <span class="k">co-occurrence</span></button>
-        <button class="disc-btn" id="exportBtn">Export this view <span class="k">.csv</span></button>
-        <button class="disc-btn" id="exportBmBtn">Export bookmarks <span class="k">.csv</span></button>
+        <label class="chk"><input type="checkbox" id="bmOnly"> Bookmarked only (<span id="bmCount">0</span>) <span style="font-size:10px;color:var(--ink-faint)">· this device</span></label>
       </div>
 
       <div class="grp">
-        <h3>Human-nature starters</h3>
+        <h3>Starter reads</h3>
         <div class="chips" id="starterChips"></div>
       </div>
     </aside>
@@ -373,7 +414,6 @@ function serializeState(){
   const p=new URLSearchParams();
   const q=$('#search').value.trim(); if(q) p.set('q',q);
   const k=$('#karmaFloor').value; if(+k>0) p.set('k',k);
-  const w=$('#wcFloor').value; if(+w>0) p.set('w',w);
   const opts=[...$('#yearMin').options].map(o=>o.value);
   const y1=$('#yearMin').value, y2=$('#yearMax').value;
   if(opts.length&&y1!==opts[0]) p.set('y1',y1);
@@ -390,8 +430,7 @@ function deserializeState(){
   if(!location.hash||location.hash==='#') return;
   const p=new URLSearchParams(location.hash.slice(1));
   if(p.has('q')){$('#search').value=p.get('q');}
-  if(p.has('k')){$('#karmaFloor').value=p.get('k');$('#karmaVal').textContent=p.get('k');}
-  if(p.has('w')){$('#wcFloor').value=p.get('w');$('#wcVal').textContent=p.get('w');}
+  if(p.has('k'))$('#karmaFloor').value=p.get('k');
   if(p.has('y1'))$('#yearMin').value=p.get('y1');
   if(p.has('y2'))$('#yearMax').value=p.get('y2');
   if(p.has('cat'))$('#catSel').value=p.get('cat');
@@ -399,6 +438,7 @@ function deserializeState(){
   if(p.has('tag'))$('#tagSel').value=p.get('tag');
   if(p.has('sort'))$('#sortSel').value=p.get('sort');
   if(p.has('bm'))$('#bmOnly').checked=p.get('bm')==='1';
+  syncPillStates();
 }
 
 /* ── Share view ── */
@@ -416,7 +456,6 @@ function activeFilters(){
   let n=0;
   if($('#search').value.trim()) n++;
   if(+$('#karmaFloor').value>0) n++;
-  if(+$('#wcFloor').value>0) n++;
   const opts=[...$('#yearMin').options].map(o=>o.value);
   if(opts.length&&($('#yearMin').value!==opts[0]||$('#yearMax').value!==opts[opts.length-1])) n++;
   if($('#catSel').value) n++;
@@ -437,20 +476,18 @@ function updateFilterBadge(){
 /* ── Clear all filters ── */
 function clearAllFilters(){
   $('#search').value='';
-  $('#karmaFloor').value=0; $('#karmaVal').textContent=0;
-  $('#wcFloor').value=0; $('#wcVal').textContent=0;
+  $('#karmaFloor').value=0;
   const opts=[...$('#yearMin').options].map(o=>o.value);
   if(opts.length){$('#yearMin').value=opts[0];$('#yearMax').value=opts[opts.length-1];}
   $('#catSel').value=''; $('#authorFilter').value=''; $('#tagSel').value='';
   $('#sortSel').value='relevance'; $('#bmOnly').checked=false;
-  update();
+  syncPillStates();update();
 }
 
 /* ── Quick filter presets ── */
 const QUICK_FILTERS=[
   {label:'500+ karma',  set:{k:500}},
   {label:'1 000+ karma',set:{k:1000}},
-  {label:'Long reads',  set:{w:4000}},
   {label:'Most discussed',set:{sort:'comments'}},
   {label:'Newest',      set:{sort:'date_desc'}},
   {label:'Classic era', set:{y1:'2009',y2:'2014'}},
@@ -467,13 +504,12 @@ function buildQuickFilters(){
     const b=document.createElement('button');
     b.className='qchip'; b.textContent=qf.label;
     b.onclick=()=>{
-      if(qf.set.k!==undefined){$('#karmaFloor').value=qf.set.k;$('#karmaVal').textContent=qf.set.k;}
-      if(qf.set.w!==undefined){$('#wcFloor').value=qf.set.w;$('#wcVal').textContent=qf.set.w;}
+      if(qf.set.k!==undefined)$('#karmaFloor').value=qf.set.k;
       if(qf.set.y1!==undefined)$('#yearMin').value=qf.set.y1;
       if(qf.set.y2!==undefined)$('#yearMax').value=qf.set.y2;
       if(qf.set.cat!==undefined)$('#catSel').value=qf.set.cat;
       if(qf.set.sort!==undefined)$('#sortSel').value=qf.set.sort;
-      update();
+      syncPillStates();update();
     };
     row.appendChild(b);
   });
@@ -742,6 +778,7 @@ function ingest(text){
   $('#app').style.display='grid';
   deserializeState();   // URL hash takes priority over localStorage
   restoreSettings();    // fills in any remaining slots localStorage remembers
+  syncPillStates();
   update();
 }
 
@@ -753,10 +790,6 @@ function buildControls(){
   years.forEach(y=>{yMin.add(new Option(y,y));yMax.add(new Option(y,y));});
   yMin.value=years[0]; yMax.value=years[years.length-1];
 
-  const maxK=Math.max(...ROWS.map(r=>r.Karma));
-  $('#karmaFloor').max=Math.min(800,maxK);
-  const maxW=Math.max(...ROWS.map(r=>r.WordCount));
-  $('#wcFloor').max=Math.min(15000,maxW);
 
   // categories
   const cats=[...new Set(ROWS.map(r=>r._cat))].sort();
@@ -818,7 +851,6 @@ function update(){
   const q=$('#search').value.trim();
   const tok=tokenize(q);
   const kFloor=+$('#karmaFloor').value;
-  const wFloor=+$('#wcFloor').value;
   const yMin=+$('#yearMin').value, yMax=+$('#yearMax').value;
   const cat=$('#catSel').value;
   const auth=$('#authorFilter').value.trim().toLowerCase();
@@ -842,7 +874,6 @@ function update(){
   let out=[];
   for(const o of ROWS){
     if(o.Karma<kFloor) continue;
-    if(o.WordCount<wFloor) continue;
     if(o.Year<yMin||o.Year>yMax) continue;
     if(cat && o._cat!==cat) continue;
     if(auth && o.Author.toLowerCase()!==auth) continue;
@@ -1052,16 +1083,16 @@ function closePanel(){$('#overlay').classList.remove('show');}
 /* ---------- Settings persistence ---------- */
 function saveSettings(){
   localStorage.setItem('lw_settings',JSON.stringify({
-    k:$('#karmaFloor').value,w:$('#wcFloor').value,sort:$('#sortSel').value,cat:$('#catSel').value
+    k:$('#karmaFloor').value,sort:$('#sortSel').value,cat:$('#catSel').value
   }));
 }
 function restoreSettings(){
   try{
     const s=JSON.parse(localStorage.getItem('lw_settings')||'{}');
-    if(s.k){$('#karmaFloor').value=s.k;$('#karmaVal').textContent=s.k;}
-    if(s.w){$('#wcFloor').value=s.w;$('#wcVal').textContent=s.w;}
+    if(s.k)$('#karmaFloor').value=s.k;
     if(s.sort)$('#sortSel').value=s.sort;
     if(s.cat)$('#catSel').value=s.cat;
+    syncPillStates();
   }catch(e){}
 }
 
@@ -1087,12 +1118,55 @@ $('#backdrop').onclick=()=>{
   updateFilterBadge();
 };
 
+/* ── Sync visual pill/button state from underlying hidden form values ── */
+function syncPillStates(){
+  const k=+$('#karmaFloor').value;
+  const hints={0:'All posts, no karma floor',25:'Got community attention (karma ≥ 25)',75:'Genuinely worth reading (karma ≥ 75)',200:'High signal — recommended (karma ≥ 200)',500:'Canonical must-read posts (karma ≥ 500)'};
+  document.querySelectorAll('.qp').forEach(b=>b.classList.toggle('active',+b.dataset.k===k));
+  const h=$('#qHint'); if(h)h.textContent=hints[k]||'karma ≥ '+k;
+  const sort=$('#sortSel').value;
+  document.querySelectorAll('.sp').forEach(b=>b.classList.toggle('active',b.dataset.sort===sort));
+  const opts=[...$('#yearMin').options].map(o=>o.value);
+  if(!opts.length)return;
+  const yr1=$('#yearMin').value, yr2=$('#yearMax').value;
+  const isAll=yr1===opts[0]&&yr2===opts[opts.length-1];
+  document.querySelectorAll('.era-btn').forEach(b=>{
+    if(b.dataset.y1===''){b.classList.toggle('active',isAll);return;}
+    const eMin=opts.find(y=>+y>=+b.dataset.y1)||opts[0];
+    const eMax=[...opts].reverse().find(y=>+y<=+b.dataset.y2)||opts[opts.length-1];
+    b.classList.toggle('active',yr1===eMin&&yr2===eMax);
+  });
+}
+
 let deb;
 $('#search').addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(update,130);});
-$('#karmaFloor').addEventListener('input',e=>{$('#karmaVal').textContent=e.target.value;update();});
-$('#wcFloor').addEventListener('input',e=>{$('#wcVal').textContent=e.target.value;update();});
-['#yearMin','#yearMax','#catSel','#tagSel','#sortSel','#authorFilter','#bmOnly'].forEach(s=>$(s).addEventListener('change',update));
+['#catSel','#tagSel','#authorFilter','#bmOnly'].forEach(s=>$(s).addEventListener('change',update));
 $('#authorFilter').addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(update,200);});
+
+/* Quality pills */
+document.querySelectorAll('.qp').forEach(b=>{
+  b.addEventListener('click',()=>{$('#karmaFloor').value=b.dataset.k;syncPillStates();update();});
+});
+
+/* Era buttons */
+document.querySelectorAll('.era-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const opts=[...$('#yearMin').options].map(o=>o.value);
+    if(!opts.length)return;
+    if(b.dataset.y1===''){
+      $('#yearMin').value=opts[0]; $('#yearMax').value=opts[opts.length-1];
+    } else {
+      $('#yearMin').value=opts.find(y=>+y>=+b.dataset.y1)||opts[0];
+      $('#yearMax').value=[...opts].reverse().find(y=>+y<=+b.dataset.y2)||opts[opts.length-1];
+    }
+    syncPillStates();update();
+  });
+});
+
+/* Sort pills */
+document.querySelectorAll('.sp').forEach(b=>{
+  b.addEventListener('click',()=>{$('#sortSel').value=b.dataset.sort;syncPillStates();update();});
+});
 
 $('#surpriseBtn').onclick=surprise;
 $('#authorsBtn').onclick=authorDeepDive;

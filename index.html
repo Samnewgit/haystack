@@ -1,0 +1,1125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Haystack — Search 49,000+ LessWrong posts by karma, author, topic & more</title>
+<meta name="description" content="Search and filter the full LessWrong archive by karma, author, year, word count, topic, and keywords. Better than LessWrong's own search.">
+<meta property="og:title" content="Haystack — LessWrong Archive Search">
+<meta property="og:description" content="Search 49,000+ LessWrong posts by karma, author, year, topic and keyword. Find the best rationality, AI safety, and philosophy writing ever published.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#16624D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EBEEE9; --raised:#F7F8F5; --raised-2:#FDFEFC;
+  --ink:#1E2522; --ink-soft:#5A645C; --ink-faint:#8A938B;
+  --line:#D4D9D1; --line-soft:#E1E5DE;
+  --pine:#16624D; --pine-deep:#0E4636; --pine-tint:#E2EEE8;
+  --focus:#1d7a5f;
+  --serif:'Spectral',Georgia,serif;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit}
+::selection{background:var(--pine-tint)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* ---------- Dark mode ---------- */
+[data-theme="dark"]{
+  --paper:#141a17; --raised:#1c2320; --raised-2:#202720;
+  --ink:#d5dbd2; --ink-soft:#8a9e8d; --ink-faint:#556359;
+  --line:#2a342e; --line-soft:#232c27;
+  --pine:#2aaa80; --pine-deep:#1d8f69; --pine-tint:#1a3028;
+  --focus:#2aaa80;
+}
+
+/* ---------- Loading / error screen ---------- */
+#loadScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--paper);z-index:50;flex-direction:column;gap:0}
+.load-card{max-width:380px;width:100%;text-align:center;padding:40px 32px}
+.load-card .mark{font-family:var(--serif);font-weight:600;font-size:42px;letter-spacing:-.02em;line-height:1;margin-bottom:18px}
+.load-card .mark em{font-style:italic;color:var(--pine)}
+.load-card p{color:var(--ink-soft);margin:0 0 20px;font-size:14px}
+.load-bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-bottom:14px}
+.load-fill{height:100%;background:var(--pine);width:0%;transition:width .3s;border-radius:2px}
+.load-note{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+.load-err{color:#c04040;margin-top:16px;font-size:13px}
+.load-err code{font-family:var(--mono);background:var(--raised);padding:2px 6px;border-radius:3px;font-size:12px}
+
+/* ---------- App shell ---------- */
+#app{display:none;grid-template-rows:auto auto 1fr;height:100vh;overflow:hidden}
+header.topbar{display:flex;align-items:center;gap:18px;padding:11px 18px;background:var(--raised);border-bottom:1px solid var(--line)}
+.topbar .mark{font-family:var(--serif);font-weight:600;font-size:20px;letter-spacing:-.01em}
+.topbar .mark em{font-style:italic;color:var(--pine)}
+.haystack-readout{font-family:var(--mono);font-size:12px;color:var(--ink-soft);white-space:nowrap}
+.haystack-readout b{color:var(--ink);font-weight:500}
+.topbar .spacer{flex:1}
+.ghost-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:6px 12px;border-radius:6px;font-size:12.5px;transition:.15s}
+.ghost-btn:hover{border-color:var(--pine);color:var(--pine)}
+
+/* terrain histogram */
+.terrain{background:var(--raised);border-bottom:1px solid var(--line);padding:8px 18px 10px}
+.terrain-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.terrain-head .lbl{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+.terrain-head .hint{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+.hist{display:flex;align-items:flex-end;gap:1px;height:46px;user-select:none;cursor:crosshair}
+.hist .bar{flex:1;background:var(--pine);opacity:.34;min-height:1px;transition:opacity .1s;border-radius:1px 1px 0 0}
+.hist .bar.in{opacity:.85}
+.hist .bar:hover{opacity:1}
+.hist-axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--ink-faint);margin-top:3px}
+
+/* body split */
+.split{display:grid;grid-template-columns:286px 1fr;overflow:hidden}
+aside.controls{border-right:1px solid var(--line);overflow-y:auto;padding:14px 16px 60px;background:var(--raised-2)}
+main.results-pane{overflow-y:auto;padding:0 0 80px}
+
+/* sidebar groups */
+.grp{margin-bottom:20px}
+.grp h3{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;margin:0 0 9px}
+.field{margin-bottom:11px}
+.field label{display:block;font-size:11.5px;color:var(--ink-soft);margin-bottom:4px}
+.field .val{font-family:var(--mono);color:var(--ink);font-weight:500}
+select,.txt{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);font-size:13px}
+input[type=range]{width:100%;accent-color:var(--pine)}
+.row2{display:flex;gap:8px}
+.row2>*{flex:1}
+.chk{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-soft);cursor:pointer}
+.chk input{accent-color:var(--pine)}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{background:var(--pine-tint);color:var(--pine-deep);border:none;padding:4px 9px;border-radius:20px;font-size:11.5px;transition:.12s}
+.chip:hover{background:var(--pine);color:#fff}
+.disc-btn{width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12.5px;color:var(--ink);transition:.12s;display:flex;justify-content:space-between;align-items:center}
+.disc-btn:hover{border-color:var(--pine);color:var(--pine)}
+.disc-btn span.k{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+
+/* search bar */
+.searchwrap{position:sticky;top:0;z-index:5;background:var(--paper);padding:14px 22px 10px;border-bottom:1px solid var(--line-soft)}
+.searchbox{position:relative}
+.searchbox input{width:100%;padding:13px 15px 13px 40px;font-size:16px;border:1px solid var(--line);border-radius:9px;background:#fff;font-family:var(--serif)}
+.searchbox input:focus{border-color:var(--pine)}
+.searchbox .mag{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink-faint)}
+.searchmeta{display:flex;justify-content:space-between;align-items:center;margin-top:9px;font-size:12px;color:var(--ink-soft)}
+.searchmeta .count b{color:var(--ink);font-family:var(--mono);font-weight:500}
+.fuzzynote{font-family:var(--mono);font-size:11px;color:var(--amber,#a8702c)}
+
+/* results */
+.results{padding:6px 22px 0}
+.card{display:grid;grid-template-columns:54px 1fr auto;gap:14px;align-items:start;padding:13px 14px;border:1px solid transparent;border-bottom:1px solid var(--line-soft);border-radius:8px}
+.card:hover{background:var(--raised-2);border-color:var(--line)}
+.karma{font-family:var(--mono);font-weight:500;font-size:13px;text-align:center;padding:4px 0;border-radius:6px;line-height:1.1}
+.karma small{display:block;font-size:9px;color:var(--ink-faint);font-weight:400;margin-top:1px}
+.card .body .title{font-family:var(--serif);font-size:16.5px;font-weight:500;color:var(--ink);text-decoration:none;line-height:1.3}
+.card .body .title:hover{color:var(--pine);text-decoration:underline}
+.card .body .title mark{background:#f6e6b8;color:inherit;padding:0 1px;border-radius:2px}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);margin-top:5px;display:flex;flex-wrap:wrap;gap:4px 12px}
+.meta .author{color:var(--ink-soft)}
+.meta .alink{cursor:pointer}
+.meta .alink:hover{color:var(--pine);text-decoration:underline}
+.cat-tag{display:inline-block;font-family:var(--sans);font-size:10.5px;background:var(--pine-tint);color:var(--pine-deep);padding:1px 7px;border-radius:4px;margin-top:6px}
+.actions{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.icon-btn{background:transparent;border:1px solid var(--line);border-radius:6px;width:30px;height:30px;font-size:14px;color:var(--ink-faint);display:flex;align-items:center;justify-content:center;transition:.12s}
+.icon-btn:hover{border-color:var(--pine);color:var(--pine)}
+.icon-btn.on{background:var(--pine);border-color:var(--pine);color:#fff}
+.icon-btn.mlt{font-size:12px}
+.showmore{display:block;margin:18px auto 0;background:#fff;border:1px solid var(--line);border-radius:7px;padding:10px 22px;color:var(--ink-soft);font-size:13px}
+.showmore:hover{border-color:var(--pine);color:var(--pine)}
+.empty{text-align:center;color:var(--ink-faint);padding:70px 20px;font-size:14px}
+.empty b{color:var(--ink-soft)}
+
+/* overlay panel */
+.overlay{position:fixed;inset:0;background:rgba(20,28,24,.34);display:none;align-items:flex-start;justify-content:center;z-index:40;padding:50px 16px}
+.overlay.show{display:flex}
+.panel{background:var(--raised-2);border-radius:12px;max-width:680px;width:100%;max-height:84vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.25)}
+.panel-head{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;border-bottom:1px solid var(--line)}
+.panel-head h2{font-family:var(--serif);font-size:19px;font-weight:600;margin:0}
+.panel-head .sub{font-size:12px;color:var(--ink-faint);font-family:var(--mono)}
+.panel-body{overflow-y:auto;padding:8px 12px 18px}
+.panel .card{grid-template-columns:50px 1fr auto}
+.close-x{background:transparent;border:none;font-size:22px;color:var(--ink-faint);line-height:1}
+.close-x:hover{color:var(--ink)}
+.aulist .arow{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;padding:9px 12px;border-bottom:1px solid var(--line-soft);align-items:center;font-size:13px}
+.aulist .arow:hover{background:var(--raised)}
+.aulist .aname{font-weight:500;color:var(--pine-deep);cursor:pointer}
+.aulist .aname:hover{text-decoration:underline}
+.aulist .anum{font-family:var(--mono);font-size:12px;color:var(--ink-soft);text-align:right}
+.aulist .ahdr{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+.cooc .crow{display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line-soft);font-size:13px;cursor:pointer}
+.cooc .crow:hover{background:var(--raised);color:var(--pine)}
+.cooc .cn{font-family:var(--mono);font-size:12px;color:var(--ink-faint)}
+
+@media(max-width:760px){
+  .split{grid-template-columns:1fr}
+  aside.controls{position:fixed;inset:0 20% 0 0;z-index:30;display:none;box-shadow:4px 0 20px rgba(0,0,0,.25);transform:translateX(-100%);transition:transform .22s ease}
+  aside.controls.open{display:block;transform:translateX(0)}
+  .card{grid-template-columns:46px 1fr}
+  .actions{flex-direction:row;grid-column:1/-1;justify-content:flex-start;margin-top:4px}
+  .filter-toggle{display:inline-flex;align-items:center;gap:6px}
+  .ghost-btn.desktop-only{display:none}
+  .share-btn.desktop-only{display:none}
+  .theme-btn{padding:5px 8px}
+  .haystack-readout{display:none}
+  .qfilters{overflow-x:auto;flex-wrap:nowrap;padding:6px 14px}
+  .qf-lbl{display:none}
+  .clear-btn{display:none}
+}
+
+/* ---------- Dark-mode toggle btn ---------- */
+.theme-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:5px 9px;border-radius:6px;font-size:15px;line-height:1;transition:.15s}
+.theme-btn:hover{border-color:var(--pine);color:var(--pine)}
+
+/* ---------- Share / mobile btns ---------- */
+.share-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:6px 12px;border-radius:6px;font-size:12.5px;transition:.15s}
+.share-btn:hover{border-color:var(--pine);color:var(--pine)}
+.share-btn.copied{border-color:var(--pine);color:var(--pine);background:var(--pine-tint)}
+.filter-toggle{display:none;background:var(--pine);color:#fff;border:none;padding:7px 13px;border-radius:6px;font-size:12.5px;font-weight:500;position:relative}
+.filter-badge{position:absolute;top:-5px;right:-5px;background:#c04040;color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 5px;line-height:1.4;display:none}
+.filter-badge.show{display:block}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:25}
+.sidebar-backdrop.show{display:block}
+
+/* ---------- Quick filters row ---------- */
+.qfilters{background:var(--raised);border-bottom:1px solid var(--line);padding:7px 18px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.qf-lbl{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;margin-right:4px;white-space:nowrap}
+.qchip{background:var(--raised-2);border:1px solid var(--line);color:var(--ink-soft);padding:4px 10px;border-radius:20px;font-size:11.5px;transition:.12s;white-space:nowrap}
+.qchip:hover{border-color:var(--pine);color:var(--pine);background:var(--pine-tint)}
+.clear-btn{margin-left:auto;background:transparent;border:none;font-size:11px;color:var(--ink-faint);text-decoration:underline;cursor:pointer;padding:0}
+.clear-btn:hover{color:var(--pine)}
+.active-note{font-family:var(--mono);font-size:11px;color:var(--pine);white-space:nowrap}
+
+/* ---------- Footer ---------- */
+.site-footer{padding:20px 22px;font-size:12px;color:var(--ink-faint);border-top:1px solid var(--line-soft);font-family:var(--mono)}
+.site-footer a{color:var(--ink-faint);text-decoration:underline}
+.site-footer a:hover{color:var(--pine)}
+
+/* ---------- Personal tags ---------- */
+.ptags-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;align-items:center}
+.ptag{background:transparent;border:1.5px dashed #b0bab2;color:var(--ink-soft);padding:2px 8px;border-radius:20px;font-size:11px;font-family:var(--sans);cursor:pointer;transition:.12s;line-height:1.4}
+.ptag:hover{border-color:#c04040;color:#c04040;background:#fff5f5}
+.ptag-add{background:transparent;border:1.5px dashed var(--line);color:var(--ink-faint);padding:2px 8px;border-radius:20px;font-size:11px;font-family:var(--sans);cursor:pointer;transition:.12s;line-height:1.4}
+.ptag-add:hover{border-color:var(--pine);color:var(--pine)}
+.ptag-input{border:1.5px solid var(--pine);border-radius:20px;padding:2px 9px;font-size:11px;font-family:var(--sans);color:var(--ink);outline:none;width:100px;line-height:1.4}
+</style>
+</head>
+<body>
+
+<!-- LOADING / ERROR -->
+<div id="loadScreen">
+  <div class="load-card">
+    <div class="mark">Hay<em>stack</em></div>
+    <p>Loading the LessWrong archive…</p>
+    <div class="load-bar"><div class="load-fill" id="loadFill"></div></div>
+    <div class="load-note" id="loadNote">Fetching data…</div>
+    <div class="load-err" id="loadErr" style="display:none"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="topbar">
+    <div class="mark">Hay<em>stack</em></div>
+    <div class="haystack-readout" id="readout"></div>
+    <div class="spacer"></div>
+    <button class="share-btn desktop-only" id="shareBtn" title="Copy link to this view">🔗 Share view</button>
+    <button class="ghost-btn desktop-only" id="authorsBtn">Authors</button>
+    <button class="theme-btn" id="themeBtn" title="Toggle dark mode">🌙</button>
+    <button class="filter-toggle" id="filterToggle">Filters <span class="filter-badge" id="filterBadge">0</span></button>
+  </header>
+
+  <div class="terrain">
+    <div class="terrain-head">
+      <span class="lbl">Terrain · posts by year</span>
+      <span class="hint" id="terrainHint">drag across bars to select an era</span>
+    </div>
+    <div class="hist" id="hist"></div>
+    <div class="hist-axis"><span id="axisMin"></span><span id="axisMax"></span></div>
+  </div>
+
+  <div class="qfilters" id="qfilters">
+    <span class="qf-lbl">Quick:</span>
+    <span class="active-note" id="activeNote" style="display:none"></span>
+  </div>
+
+  <div class="sidebar-backdrop" id="backdrop"></div>
+  <div class="split">
+    <aside class="controls">
+      <div class="grp">
+        <h3>Filter</h3>
+        <div class="field">
+          <label>Minimum karma · <span class="val" id="karmaVal">0</span></label>
+          <input type="range" id="karmaFloor" min="0" max="500" value="0" step="5">
+        </div>
+        <div class="field">
+          <label>Year range</label>
+          <div class="row2">
+            <select id="yearMin"></select>
+            <select id="yearMax"></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Minimum length · <span class="val" id="wcVal">0</span> words</label>
+          <input type="range" id="wcFloor" min="0" max="10000" value="0" step="250">
+        </div>
+        <div class="field">
+          <label>Theme</label>
+          <select id="catSel"><option value="">All themes</option></select>
+        </div>
+        <div class="field">
+          <label>Author</label>
+          <input class="txt" id="authorFilter" list="authorList" placeholder="any author">
+          <datalist id="authorList"></datalist>
+        </div>
+        <div class="field">
+          <label>Tag</label>
+          <select id="tagSel"><option value="">any tag</option></select>
+        </div>
+        <label class="chk"><input type="checkbox" id="bmOnly"> Bookmarked only (<span id="bmCount">0</span>) <span style="font-size:10px;color:var(--ink-faint)">· this device</span></label>
+      </div>
+
+      <div class="grp">
+        <h3>Sort</h3>
+        <select id="sortSel">
+          <option value="relevance">Best match (when searching)</option>
+          <option value="karma">Karma — high to low</option>
+          <option value="pct">Karma percentile in its year</option>
+          <option value="date_desc">Newest first</option>
+          <option value="date_asc">Oldest first</option>
+          <option value="comments">Most discussed</option>
+          <option value="title">Title A→Z</option>
+        </select>
+      </div>
+
+      <div class="grp">
+        <h3>Discover</h3>
+        <button class="disc-btn" id="surpriseBtn">Surprise me <span class="k">random ≥ floor</span></button>
+        <button class="disc-btn" id="tagCoocBtn">Tag neighbours <span class="k">co-occurrence</span></button>
+        <button class="disc-btn" id="exportBtn">Export this view <span class="k">.csv</span></button>
+        <button class="disc-btn" id="exportBmBtn">Export bookmarks <span class="k">.csv</span></button>
+      </div>
+
+      <div class="grp">
+        <h3>Human-nature starters</h3>
+        <div class="chips" id="starterChips"></div>
+      </div>
+    </aside>
+
+    <main class="results-pane">
+      <div class="searchwrap">
+        <div class="searchbox">
+          <span class="mag">⌕</span>
+          <input id="search" placeholder='Search titles, authors, tags — "quote" for exact phrase' autocomplete="off">
+        </div>
+        <div class="searchmeta">
+          <span class="count"><b id="resultCount">0</b> posts in view</span>
+          <span class="fuzzynote" id="fuzzyNote"></span>
+        </div>
+      </div>
+      <div class="results" id="results"></div>
+      <footer class="site-footer">
+        Data from <a href="https://www.lesswrong.com" target="_blank" rel="noopener">LessWrong</a> · <span id="dataDate"></span> · Bookmarks save to this browser only · Built with Haystack
+      </footer>
+    </main>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="panel">
+    <div class="panel-head">
+      <div><h2 id="panelTitle"></h2><div class="sub" id="panelSub"></div></div>
+      <button class="close-x" id="panelClose">×</button>
+    </div>
+    <div class="panel-body" id="panelBody"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Haystack PUBLIC — LessWrong archive search (single-file)
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const REQUIRED = ["Title","URL","Author","Date","Year","Karma","Votes","Comments","Word Count","Tags","Post ID"];
+
+/* ── Configure your data source here ── */
+const DATA_URL = './data.csv';   // path to CSV relative to this HTML file
+const DATA_LABEL = '';           // e.g. 'June 2025' — shown in footer; leave blank to auto-detect
+
+let ROWS=[];
+let VIEW=[];
+let VOCAB=new Set();
+let YEAR_KARMA={};
+let BOOKMARKS=new Set(JSON.parse(localStorage.getItem('lw_bookmarks')||'[]'));
+let RENDER_LIMIT=100;
+let lastFuzzy=false;
+
+/* ── Dark mode ── */
+(function(){
+  const saved=localStorage.getItem('lw_theme');
+  const sys=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  document.documentElement.dataset.theme=saved||sys;
+})();
+function toggleTheme(){
+  const next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+  document.documentElement.dataset.theme=next;
+  localStorage.setItem('lw_theme',next);
+  $('#themeBtn').textContent=next==='dark'?'☀️':'🌙';
+}
+
+/* ── URL state — encode all filters in the hash so views are shareable ── */
+function serializeState(){
+  const p=new URLSearchParams();
+  const q=$('#search').value.trim(); if(q) p.set('q',q);
+  const k=$('#karmaFloor').value; if(+k>0) p.set('k',k);
+  const w=$('#wcFloor').value; if(+w>0) p.set('w',w);
+  const opts=[...$('#yearMin').options].map(o=>o.value);
+  const y1=$('#yearMin').value, y2=$('#yearMax').value;
+  if(opts.length&&y1!==opts[0]) p.set('y1',y1);
+  if(opts.length&&y2!==opts[opts.length-1]) p.set('y2',y2);
+  const cat=$('#catSel').value; if(cat) p.set('cat',cat);
+  const auth=$('#authorFilter').value.trim(); if(auth) p.set('auth',auth);
+  const tag=$('#tagSel').value; if(tag) p.set('tag',tag);
+  const sort=$('#sortSel').value; if(sort&&sort!=='relevance') p.set('sort',sort);
+  if($('#bmOnly').checked) p.set('bm','1');
+  const s=p.toString();
+  history.replaceState(null,'',s?'#'+s:location.pathname+location.search);
+}
+function deserializeState(){
+  if(!location.hash||location.hash==='#') return;
+  const p=new URLSearchParams(location.hash.slice(1));
+  if(p.has('q')){$('#search').value=p.get('q');}
+  if(p.has('k')){$('#karmaFloor').value=p.get('k');$('#karmaVal').textContent=p.get('k');}
+  if(p.has('w')){$('#wcFloor').value=p.get('w');$('#wcVal').textContent=p.get('w');}
+  if(p.has('y1'))$('#yearMin').value=p.get('y1');
+  if(p.has('y2'))$('#yearMax').value=p.get('y2');
+  if(p.has('cat'))$('#catSel').value=p.get('cat');
+  if(p.has('auth'))$('#authorFilter').value=p.get('auth');
+  if(p.has('tag'))$('#tagSel').value=p.get('tag');
+  if(p.has('sort'))$('#sortSel').value=p.get('sort');
+  if(p.has('bm'))$('#bmOnly').checked=p.get('bm')==='1';
+}
+
+/* ── Share view ── */
+function shareView(){
+  serializeState();
+  const url=location.href;
+  navigator.clipboard.writeText(url).then(()=>{
+    const btn=$('#shareBtn'); btn.textContent='✓ Copied!'; btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='🔗 Share view';btn.classList.remove('copied');},2000);
+  }).catch(()=>prompt('Copy this link:',url));
+}
+
+/* ── Active filter count ── */
+function activeFilters(){
+  let n=0;
+  if($('#search').value.trim()) n++;
+  if(+$('#karmaFloor').value>0) n++;
+  if(+$('#wcFloor').value>0) n++;
+  const opts=[...$('#yearMin').options].map(o=>o.value);
+  if(opts.length&&($('#yearMin').value!==opts[0]||$('#yearMax').value!==opts[opts.length-1])) n++;
+  if($('#catSel').value) n++;
+  if($('#authorFilter').value.trim()) n++;
+  if($('#tagSel').value) n++;
+  if($('#bmOnly').checked) n++;
+  return n;
+}
+function updateFilterBadge(){
+  const n=activeFilters();
+  const badge=$('#filterBadge');
+  badge.textContent=n; badge.classList.toggle('show',n>0);
+  const note=$('#activeNote');
+  if(n>0){note.textContent=n+' filter'+(n>1?'s':'')+' active';note.style.display='';}
+  else note.style.display='none';
+}
+
+/* ── Clear all filters ── */
+function clearAllFilters(){
+  $('#search').value='';
+  $('#karmaFloor').value=0; $('#karmaVal').textContent=0;
+  $('#wcFloor').value=0; $('#wcVal').textContent=0;
+  const opts=[...$('#yearMin').options].map(o=>o.value);
+  if(opts.length){$('#yearMin').value=opts[0];$('#yearMax').value=opts[opts.length-1];}
+  $('#catSel').value=''; $('#authorFilter').value=''; $('#tagSel').value='';
+  $('#sortSel').value='relevance'; $('#bmOnly').checked=false;
+  update();
+}
+
+/* ── Quick filter presets ── */
+const QUICK_FILTERS=[
+  {label:'500+ karma',  set:{k:500}},
+  {label:'1 000+ karma',set:{k:1000}},
+  {label:'Long reads',  set:{w:4000}},
+  {label:'Most discussed',set:{sort:'comments'}},
+  {label:'Newest',      set:{sort:'date_desc'}},
+  {label:'Classic era', set:{y1:'2009',y2:'2014'}},
+  {label:'AI Safety',   set:{cat:'AI · Alignment & Safety'}},
+  {label:'Rationality', set:{cat:'Epistemics & Rationality'}},
+  {label:'Philosophy',  set:{cat:'Ethics & Moral Philosophy'}},
+  {label:'EA',          set:{cat:'Effective Altruism'}},
+];
+function buildQuickFilters(){
+  const row=$('#qfilters');
+  const lbl=row.querySelector('.qf-lbl');
+  const note=$('#activeNote');
+  QUICK_FILTERS.forEach(qf=>{
+    const b=document.createElement('button');
+    b.className='qchip'; b.textContent=qf.label;
+    b.onclick=()=>{
+      if(qf.set.k!==undefined){$('#karmaFloor').value=qf.set.k;$('#karmaVal').textContent=qf.set.k;}
+      if(qf.set.w!==undefined){$('#wcFloor').value=qf.set.w;$('#wcVal').textContent=qf.set.w;}
+      if(qf.set.y1!==undefined)$('#yearMin').value=qf.set.y1;
+      if(qf.set.y2!==undefined)$('#yearMax').value=qf.set.y2;
+      if(qf.set.cat!==undefined)$('#catSel').value=qf.set.cat;
+      if(qf.set.sort!==undefined)$('#sortSel').value=qf.set.sort;
+      update();
+    };
+    row.appendChild(b);
+  });
+  const clr=document.createElement('button');
+  clr.className='clear-btn'; clr.textContent='Clear all filters';
+  clr.onclick=clearAllFilters;
+  row.appendChild(clr);
+}
+
+/* ── Auto-fetch CSV with progress ── */
+async function autoLoad(){
+  const fill=$('#loadFill'), note=$('#loadNote'), err=$('#loadErr');
+  try{
+    note.textContent='Connecting…';
+    const res=await fetch(DATA_URL);
+    if(!res.ok) throw new Error('Server returned '+res.status+' for '+DATA_URL);
+    const total=+res.headers.get('content-length')||0;
+    let loaded=0;
+    const reader=res.body.getReader();
+    const chunks=[];
+    while(true){
+      const{done,value}=await reader.read();
+      if(done) break;
+      chunks.push(value); loaded+=value.length;
+      if(total){fill.style.width=(loaded/total*90)+'%';}
+      else fill.style.width=Math.min(85,loaded/50000)+'%';
+      note.textContent='Loading… '+(total?Math.round(loaded/total*100)+'%':Math.round(loaded/1024)+' KB');
+    }
+    fill.style.width='95%';
+    note.textContent='Parsing…';
+    const bytes=new Uint8Array(loaded);
+    let offset=0; for(const c of chunks){bytes.set(c,offset);offset+=c.length;}
+    const text=new TextDecoder().decode(bytes);
+    fill.style.width='100%';
+    ingest(text);
+    if(DATA_LABEL) $('#dataDate').textContent='data: '+DATA_LABEL;
+    else{
+      const newest=ROWS.reduce((mx,r)=>r.Date>mx?r.Date:mx,'');
+      if(newest) $('#dataDate').textContent='data through '+newest.slice(0,7);
+    }
+    $('#loadScreen').style.display='none';
+  }catch(e){
+    err.innerHTML='<b>Could not load data.</b><br>'+e.message+'<br><br>Make sure <code>'+DATA_URL+'</code> exists and this page is served from an HTTP server (not opened as a file:// URL).';
+    err.style.display='';
+    fill.style.width='0';
+    note.textContent='';
+  }
+}
+
+/* ---------- CSV parser (handles quotes, commas, newlines) ---------- */
+function parseCSV(text){
+  if(text.charCodeAt(0)===0xFEFF) text=text.slice(1); // strip BOM
+  const rows=[]; let row=[], field='', i=0, inQ=false;
+  while(i<text.length){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){ if(text[i+1]==='"'){field+='"';i+=2;continue;} inQ=false;i++;continue; }
+      field+=c;i++;continue;
+    }
+    if(c==='"'){inQ=true;i++;continue;}
+    if(c===','){row.push(field);field='';i++;continue;}
+    if(c==='\r'){i++;continue;}
+    if(c==='\n'){row.push(field);rows.push(row);row=[];field='';i++;continue;}
+    field+=c;i++;
+  }
+  if(field.length||row.length){row.push(field);rows.push(row);}
+  return rows;
+}
+
+/* ---------- Classification (on the fly) ---------- */
+const CATS=[
+  /* ── AI sub-disciplines (most specific first so scoring resolves correctly) ── */
+  {name:"AI · Alignment & Safety",
+   tags:["AI Safety","AI Risk","Deceptive Alignment","AI Control","Corrigibility","Value Alignment","Inner Alignment","Outer Alignment"],
+   kw:["alignment","misalign","ai safety","ai risk","ai control","deceptive alignment","corrigib","scheming","ai takeover","power-seeking","powerseeking","value learning","reward hacking","inner alignment","outer alignment","mesa-optim","shutdown","off-switch","sycophancy","goal misgenerali","treacherous turn","unaligned","safe ai","safety research","specification gaming","reward tampering","avoiding shutdown","human oversight","human control","broadly safe"]},
+
+  {name:"AI · Interpretability",
+   tags:["Interpretability (ML & AI)","Mechanistic Interpretability","Transparency"],
+   kw:["interpretab","mechanistic","circuit","activation patching","sae","sparse autoencoder","steering vector","superposition","polysemantic","monosemantic","residual stream","attention head","feature visualization","causal scrubbing","representation","probing","ablation","logit lens","linear representation","latent space","internal representation","neuron","grokking"]},
+
+  {name:"AI · LLMs & Foundation Models",
+   tags:["Language Models (LLMs)","Large Language Models","Foundation Models"],
+   kw:["llm","language model","transformer","gpt","claude","gemini","fine-tun","rlhf","rlaif","dpo","ppo","instruction-tun","constitutional ai","chain-of-thought","in-context learn","few-shot","zero-shot","context window","pretrain","tokeniz","embedding","next-token","prompt engineer","jailbreak","refusal","hallucination","temperature","logprob","retrieval augmented","rag"]},
+
+  {name:"AI · Capabilities & Progress",
+   tags:["AI Capabilities","AI Timelines","AI Evaluations","AI Progress","Artificial General Intelligence"],
+   kw:["capabilit","benchmark","evals","evaluation","timeline","agi","asi","superintelligen","scaling law","neural net","machine learning","deep learning","ai progress","compute","flop","parameter","emergent","generali","overfitting","reinforcement learning","training run","dataset","model performance","evals harness","task performance","human level","passing","turing"]},
+
+  {name:"AI · Agents & Automation",
+   tags:["AI Agents","Agentic AI","Autonomous AI","Multi-Agent"],
+   kw:["ai agent","agentic","autonomous ai","multi-agent","tool use","scaffold","agent loop","computer use","automated research","long horizon","task automat","delegat","agent safety","swarm","orchestrat","plan and execute","self-improve","recursive self","agent benchmark"]},
+
+  {name:"AI · Governance & Policy",
+   tags:["AI Governance","AI Policy","AI Regulation","AI Labs"],
+   kw:["ai governance","ai policy","regulat","ai lab","frontier lab","export control","ai pause","moratoria","chip restriction","compute governance","international cooperation","treaty","norms","liability","openai","anthropic policy","deepmind","safety team","evals policy","pause ai","slow down","race dynamic","coordination fail","government","legislation","congress","parliament"]},
+
+  /* ── Rationality & Epistemics ── */
+  {name:"Epistemics & Rationality",
+   tags:["Rationality","Epistemology","Bayesian Reasoning","Epistemic Humility"],
+   kw:["rationalit","epistemic","bayesian","bayes","belief update","credence","prior","posterior","calibrat","overconfiden","underconfiden","motivated reasoning","cognitive bias","confir","availab","anchoring","framing effect","map and territory","scout mindset","steel man","crux","disagree","update on","evidence","truth-seek","object level","meta level","cached thought"]},
+
+  {name:"Decision Theory & Game Theory",
+   tags:["Decision Theory","Game Theory","Coordination"],
+   kw:["decision theory","utility function","expected utility","expected value","newcomb","acausal","evidential decision","causal decision","functional decision","timeless decision","udt","cdt","edt","fdt","prisoner","schelling","coordination","defect","cooperat","social dilemma","precommit","commitment device","ultimatum","pareto","nash equilibrium","game theory","mechanism design","dominant strategy","iterated"]},
+
+  {name:"Forecasting & Prediction",
+   tags:["Forecasting & Prediction","Prediction Markets","Superforecasting","Calibration"],
+   kw:["forecast","prediction market","superforecast","metaculus","manifold","polymarket","brier score","base rate","outside view","inside view","fermi","reference class","track record","calibration","prediction interval","geopolit forecast","expert prediction","pundits","fox hedgehog","2030","2040","2050","by 2025","p(doom)","probability of"]},
+
+  {name:"Cognitive Science & Psychology",
+   tags:["Psychology","Cognitive Science","Human Psychology","Behavioral Science"],
+   kw:["cognit","psychology","cognitive load","working memory","intuition","emotion","anxiety","depression","trauma","therapy","cbt","attachment","ego","self-esteem","akrasia","procrastinat","willpower","attention","focus","stress","burnout","mental health","dual process","system 1","system 2","habit loop","nudge","behavioral economics","introspect","self-knowledge","agency","autonomy","identity"]},
+
+  /* ── Philosophy ── */
+  {name:"Philosophy of Mind & Consciousness",
+   tags:["Consciousness","Philosophy of Mind","Qualia","Sentience","Phenomenology"],
+   kw:["consciousness","qualia","sentience","subjective experience","hard problem","philosophical zombie","phenomenal","functionalism","illusionism","panpsychism","integrated information","global workspace","self-aware","what it is like","inner experience","experience machine","pain","pleasure","suffering","valence","moral patienthood","moral status","mind body"]},
+
+  {name:"Ethics & Moral Philosophy",
+   tags:["Ethics & Morality","Moral Philosophy","Population Ethics","Metaethics","Moral Uncertainty"],
+   kw:["ethic","moral","utilitarian","consequentiali","deontolog","virtue ethics","contractualism","metaethic","suffering","wellbeing","welfare","hedonic","population ethics","longtermism","person-affecting","total view","person view","extinction","moral realism","moral anti-realism","moral uncertainty","moral intuition","moral circle","sentient","right action","moral obligation","duty","harm","beneficence","impartial"]},
+
+  {name:"Philosophy & Metaphysics",
+   tags:["Philosophy","Metaphysics","Ontology","Logic","Philosophy of Language"],
+   kw:["philosoph","metaphys","ontolog","analytic philosophy","philosophy of language","meaning","reference","truth","logic","modal","possible world","counterfactual","causation","grounding","substance","property","abstraction","mathematical objects","realism","nominalism","physicalism","naturalism","emergence","supervenience","reduction","mereology","composition","type token"]},
+
+  /* ── Science & Research ── */
+  {name:"Biology, Medicine & Health",
+   tags:["Biology","Health / Medicine / Disease","Medicine","Genetics","Aging","Longevity"],
+   kw:["biolog","medicine","health","disease","genetics","evolution","dna","protein","cancer","vaccine","immune","aging","longevity","lifespan","pharmacol","clinical trial","randomized","placebo","metabolism","nutrition","microbiome","virology","pandemic","pathogen","drug","treatment","therapy","epidemiolog","mortality","morbidity","chronic","diagnosis","symptom","fitness","diet","sleep"]},
+
+  {name:"Neuroscience & Brain",
+   tags:["Neuroscience","Brain Science","Cognitive Neuroscience"],
+   kw:["neuroscience","brain","neuron","synapse","cortex","prefrontal","hippocampus","amygdala","plasticity","memory consolidat","long-term potentiation","dopamine","serotonin","reward circuit","fmri","eeg","connectome","neural correlate","neurolog","brain stimulation","tms","psychedelic","meditation brain","default mode"]},
+
+  {name:"Physics & Mathematics",
+   tags:["Physics","Mathematics","Cosmology","Statistics","Probability Theory"],
+   kw:["physics","quantum","relativity","cosmolog","thermodynamic","entropy","black hole","particle","string theory","dark matter","dark energy","space","astronomy","theorem","proof","algebra","calculus","topology","combinatoric","graph theory","complexity","probabilit","statistic","p-value","frequentist","confidence","bayesian statistic","distribution","variance","regression","causal inference"]},
+
+  /* ── Society, EA & Risk ── */
+  {name:"Effective Altruism",
+   tags:["Effective Altruism","Effective Giving","Global Poverty","Animal Welfare","Cause Prioritization"],
+   kw:["effective altruism","charit","donat","philanthrop","cause priorit","neglected","tractab","scale","global poverty","animal welfare","earning to give","direct work","givewell","open philanthropy","80000 hours","givingwhatwecan","impact","cost-effective","ea community","ea movement","cause area","hits-based","giving pledge","moral trade","total suffering","factory farm","cage-free","welfare research"]},
+
+  {name:"Global Risks & X-Risk",
+   tags:["Global Catastrophic Risk","Existential Risk","Biosecurity","Nuclear Risk","Climate"],
+   kw:["x-risk","existential risk","global catastroph","biorisk","bioweapon","pandemic risk","nuclear","civilizat collapse","extinction","great filter","fermi paradox","future generation","asteroid","solar flare","war risk","wmd","engineered pathogen","civilizational","end of the world","recovery","resilience","s-risk","suffering risk","value lock-in","global takeover"]},
+
+  {name:"Economics & Markets",
+   tags:["Economics","Finance","Macroeconomics","Markets","Crypto"],
+   kw:["econom","market","price signal","incentive","mechanism design","auction","crypto","bitcoin","inflation","gdp","wealth","inequality","labor market","trade","supply","demand","monopol","cost benefit","externality","public good","commons","invest","fund","startup","venture capital","gdp growth","productivity","automation economy","universal basic","unemployment","recession","fiscal","monetary"]},
+
+  {name:"Politics & Society",
+   tags:["Politics","Democracy","Governance","Society","Social Justice"],
+   kw:["politic","democra","government","election","vote","institution","law","justice","freedom","liberty","authoritar","bureaucracy","social norm","culture","tribe","ideology","partisan","reform","policy","populism","identity politics","media","journalism","misinformation","social media","online","discourse","polariz","cancel","free speech","censorship","civilizat"]},
+
+  /* ── Personal & Practical ── */
+  {name:"Self-Improvement & Productivity",
+   tags:["Self-Improvement","Productivity","Personal Development","Life Advice","Habits"],
+   kw:["productiv","habit","self-improv","study","skill","routine","workflow","time management","goal setting","system","discipline","deliberate practice","spaced repetition","note-taking","journaling","meditation","exercise","sleep hygiene","life advice","self-help","learn how","becoming","getting better","improve yourself","reading","writing skill","memory technique"]},
+
+  {name:"Career, Relationships & Social",
+   tags:["Career","Relationships","Social Skills","Status","Dating"],
+   kw:["career","job","work","relationship","friend","love","dating","social skills","networking","trust","communication","conflict","parenting","family","status","signaling","reputation","negotiat","collaborat","leadership","management","mentorin","community building","how to make friends","romantic","polyamory","marriage","divorce","loneliness","belonging","social capital"]},
+
+  /* ── LW-specific ── */
+  {name:"Community & Events",
+   tags:["Community","LessWrong Events","CFAR","Rationalist Community","Berkeley"],
+   kw:["meetup","acx meetup","schelling meetup","cfar","workshop","fellowship","mats","aisf","apart research","retreat","petrov day","solstice","less online","announcing","hiring","lesswrong","event","conference","summit","bay area","london","berlin","ea house","rationalist community","diaspora","rationalsphere","slatestarcodex","astral codex"]},
+
+  {name:"Fiction & Narrative",
+   tags:["Fiction","Creative Writing","Rationalist Fiction","Harry Potter and the Methods of Rationality"],
+   kw:["fiction"," story ","parable","fable","poem","short story","april fool","dath ilan","hpmor","harry potter methods","narrative","creative writing","tale","chapter","novel","character arc","protagonist","imagine a world","scenario","what if","speculative","science fiction","sci-fi","utopia","dystopia"]},
+
+  {name:"Site Meta & Newsletters",
+   tags:["Site Meta","Newsletters","LessWrong Meta","Open Threads"],
+   kw:["newsletter","roundup","digest","open thread","linkpost","highlight","site update","moderati","karma system","lesswrong feature","substack","monthly","weekly","annual review","best of","2023 review","2024 review","welcome to","introduction post","my background","about me"]},
+
+  /* ── Extra categories to reduce Miscellaneous ── */
+  {name:"Book & Media Reviews",
+   tags:["Book Review","Review","Reviews","Summaries"],
+   kw:["review of ","book review","i read ","i've read","thoughts on ","summary of ","critique","a review","reading notes","book notes","reading log","recommended reading","reading list","best books","favorite book","re-reading","book club","in-depth look","reaction to","response to book","spoiler","chapter summary","key takeaways","reading recommendations","worth reading","highly recommend"]},
+
+  {name:"Technology & Engineering",
+   tags:["Technology","Software Engineering","Programming","Computer Science","Engineering","Cybersecurity"],
+   kw:["software","programming","code","algorithm","database","distributed","devops","linux","python","javascript","typescript","rust","compiler","operating system","network","encryption","cryptography","hardware","cpu","gpu","semiconductor","system design","api design","computer architecture","infrastructure","open source","github","security","vulnerability","bug","developer","engineer"]},
+
+  {name:"History & Progress Studies",
+   tags:["History","Progress Studies","Economic History","Science History","Civilizational"],
+   kw:["history","historical","civilizat","progress studies","industrial revolution","agricultural revolution","ancient","medieval","renaissance","enlightenment","empire","colonialism","scientific revolution","economic history","long-term trend","past century","millennium","great stagnation","why did","how did","look back","hindsight","retrospective","bronze age","iron age","steam engine","printing press","how we got here","historical pattern","lessons from history"]},
+
+  {name:"Research Methods & Empiricism",
+   tags:["Research Methods","Replication Crisis","Empiricism","Statistics","Epistemology of Science"],
+   kw:["replication crisis","effect size","meta-analysis","systematic review","publication bias","preregistration","open science","science reform","reproducibility","study design","rct","natural experiment","research debt","null hypothesis","statistical power","experiment design","survey design","data collection","measurement error","operationalize","research methodology","scientific method","how to research","evidence hierarchy","literature review","sample size","confound","placebo controlled"]},
+
+  {name:"Social Dynamics & Status",
+   tags:["Social Dynamics","Status","Signaling","Tribalism","Social"],
+   kw:["social status","status game","signaling","tribe","in-group","out-group","social hierarch","dominance","prestige","social capital","influence","persuasion","conformity","groupthink","social pressure","belonging","inclusion","exclusion","high status","low status","status anxiety","popularity","social approval","fitting in","social climbing","face","envy","jealousy","competition","rivalry","political correctness","cancel","us vs them","outgroup"]},
+
+  {name:"Thought Experiments & Puzzles",
+   tags:["Thought Experiments","Puzzles","Philosophy Puzzles","Paradoxes","Counterintuitive"],
+   kw:["thought experiment","trolley problem","utility monster","experience machine","brain in a vat","chinese room","teleporter","ship of theseus","pascal's mugging","pascal mugging","boltzmann brain","galaxy brain","repugnant conclusion","paradox","riddle","consider a world","imagine that","suppose that","what if we","puzzle","counter-intuitive","surprising implication","thought-experiment","hypothetically","let us suppose","consider this","imagine a","thought-provoking","weird implication"]},
+
+  {name:"Anthropics & Observer Selection",
+   tags:["Anthropics","Observer Selection","Simulation Theory","Doomsday Argument","Anthropic Reasoning"],
+   kw:["anthropic principle","anthropic reasoning","observer selection","doomsday argument","reference class","self-sampling","self-indication","ssa ","sia ","simulation hypothesis","are we simulated","boltzmann brain","observation selection effect","sleeping beauty problem","presumptuous philosopher","fine-tuning","why is there something","why am i","expected number of observers","measure over observers","cosmic","multiverse selection"]},
+
+  {name:"Humor & Satire",
+   tags:["Humor","Satire","Comedy","Parody","April Fools","Shitpost"],
+   kw:["april fool","satire","humour","funny","comedy","joke","parody","absurd","tongue-in-cheek","not serious","just for fun","shitpost","ironic","sarcasm","lighthearted","for laughs","deliberately silly","whimsical","spoof","mock","play on","humorous"]}
+];
+
+function classify(title,tags){
+  // search both title and tags for keywords — the original only searched title
+  const t=' '+title.toLowerCase()+' '+tags.toLowerCase()+' ';
+  const tagset=tags.split(',').map(s=>s.trim());
+  let best='Miscellaneous',score=0;
+  for(const c of CATS){
+    let s=0;
+    for(const tg of c.tags) if(tagset.includes(tg)) s+=4;
+    for(const k of c.kw) if(t.includes(k)) s+=1;
+    if(s>score){score=s;best=c.name;}
+  }
+  // fallback: any tag containing 'AI' → capabilities bucket
+  if(score===0 && tagset.some(tg=>tg.toLowerCase().includes('ai'))) return 'AI · Capabilities & Progress';
+  return best;
+}
+
+/* ---------- Load & prep ---------- */
+function ingest(text){
+  const grid=parseCSV(text);
+  const header=grid[0].map(h=>h.trim());
+  const missing=REQUIRED.filter(c=>!header.includes(c));
+  if(missing.length) throw new Error("Missing columns: "+missing.join(", "));
+  const idx={}; header.forEach((h,i)=>idx[h]=i);
+  ROWS=[];
+  for(let r=1;r<grid.length;r++){
+    const g=grid[r]; if(!g.length||(g.length===1&&g[0]==='')) continue;
+    const o={
+      Title:g[idx.Title]||'', URL:g[idx.URL]||'', Author:g[idx.Author]||'',
+      Date:g[idx.Date]||'', Year:+g[idx.Year]||0, Karma:+g[idx.Karma]||0,
+      Votes:+g[idx.Votes]||0, Comments:+g[idx.Comments]||0,
+      WordCount:+g[idx["Word Count"]]||0, Tags:g[idx.Tags]||'', ID:g[idx["Post ID"]]||''
+    };
+    o._t=(o.Title+' '+o.Author+' '+o.Tags).toLowerCase();
+    o._titleLow=o.Title.toLowerCase();
+    o._cat=classify(o.Title,o.Tags);
+    o._words=o._titleLow.match(/[a-z][a-z'-]{2,}/g)||[];
+    ROWS.push(o);
+  }
+  // vocab + per-year karma
+  YEAR_KARMA={};
+  for(const o of ROWS){
+    for(const w of o._words) VOCAB.add(w);
+    (YEAR_KARMA[o.Year]=YEAR_KARMA[o.Year]||[]).push(o.Karma);
+  }
+  for(const y in YEAR_KARMA) YEAR_KARMA[y].sort((a,b)=>a-b);
+  for(const o of ROWS){
+    const arr=YEAR_KARMA[o.Year];
+    let lo=0,hi=arr.length; const v=o.Karma;
+    while(lo<hi){const m=(lo+hi)>>1; if(arr[m]<v) lo=m+1; else hi=m;}
+    o._pct=arr.length>1? lo/(arr.length-1):1;
+  }
+  buildControls();
+  buildQuickFilters();
+  $('#app').style.display='grid';
+  deserializeState();   // URL hash takes priority over localStorage
+  restoreSettings();    // fills in any remaining slots localStorage remembers
+  update();
+}
+
+/* ---------- Build sidebar controls from data ---------- */
+function buildControls(){
+  const years=[...new Set(ROWS.map(r=>r.Year).filter(Boolean))].sort((a,b)=>a-b);
+  const yMin=$('#yearMin'), yMax=$('#yearMax');
+  yMin.innerHTML=''; yMax.innerHTML='';
+  years.forEach(y=>{yMin.add(new Option(y,y));yMax.add(new Option(y,y));});
+  yMin.value=years[0]; yMax.value=years[years.length-1];
+  $('#axisMin').textContent=years[0]; $('#axisMax').textContent=years[years.length-1];
+
+  const maxK=Math.max(...ROWS.map(r=>r.Karma));
+  $('#karmaFloor').max=Math.min(800,maxK);
+  const maxW=Math.max(...ROWS.map(r=>r.WordCount));
+  $('#wcFloor').max=Math.min(15000,maxW);
+
+  // categories
+  const cats=[...new Set(ROWS.map(r=>r._cat))].sort();
+  const cs=$('#catSel'); cats.forEach(c=>cs.add(new Option(c,c)));
+  // tags (top 60 by freq)
+  const tf={}; ROWS.forEach(r=>r.Tags.split(',').forEach(t=>{t=t.trim();if(t)tf[t]=(tf[t]||0)+1;}));
+  const topTags=Object.entries(tf).sort((a,b)=>b[1]-a[1]).slice(0,60);
+  const ts=$('#tagSel'); topTags.forEach(([t,n])=>ts.add(new Option(`${t} (${n})`,t)));
+  // authors datalist (top 300 by count)
+  const af={}; ROWS.forEach(r=>{if(r.Author)af[r.Author]=(af[r.Author]||0)+1;});
+  const al=$('#authorList');
+  Object.entries(af).sort((a,b)=>b[1]-a[1]).slice(0,300).forEach(([a])=>{
+    const opt=document.createElement('option'); opt.value=a; al.appendChild(opt);
+  });
+  // starter chips
+  const starters=["agency","identity","habit","emotion","motivation","self-deception","willpower","regret","attention","virtue","status","death","meaning","trust","fear","procrastination"];
+  const sc=$('#starterChips'); sc.innerHTML='';
+  starters.forEach(w=>{const b=document.createElement('button');b.className='chip';b.textContent=w;b.onclick=()=>{$('#search').value=w;update();};sc.appendChild(b);});
+  $('#bmCount').textContent=BOOKMARKS.size;
+}
+
+/* ---------- Search ---------- */
+function tokenize(q){
+  const phrases=[...q.matchAll(/"([^"]+)"/g)].map(m=>m[1].toLowerCase().trim());
+  const rest=q.replace(/"[^"]+"/g,' ');
+  const words=(rest.toLowerCase().match(/[a-z0-9][a-z0-9'-]*/g)||[]).map(stem);
+  return {phrases,words};
+}
+function stem(w){ return w.replace(/(ing|ed|ies|es|s)$/,m=>w.length-m.length>=3?'':m); }
+function edits1(w){
+  const out=new Set(),a='abcdefghijklmnopqrstuvwxyz';
+  for(let i=0;i<=w.length;i++){
+    if(i<w.length) out.add(w.slice(0,i)+w.slice(i+1));        // delete
+    for(const c of a){
+      out.add(w.slice(0,i)+c+w.slice(i));                      // insert
+      if(i<w.length) out.add(w.slice(0,i)+c+w.slice(i+1));     // sub
+    }
+  }
+  return out;
+}
+function searchScore(o,tok,expand){
+  for(const p of tok.phrases){ if(!o._t.includes(p)) return -1; }
+  let score=0;
+  for(const w of tok.words){
+    if(o._t.includes(w)){ score+= o._titleLow.includes(w)?2:1; continue; }
+    if(expand && expand[w]){
+      let hit=false;
+      for(const cand of expand[w]) if(o._t.includes(cand)){hit=true;break;}
+      if(hit){score+=0.5;continue;}
+    }
+    return -1; // AND logic: every term must match
+  }
+  // blend with karma (log) so strong+popular ranks above strong+obscure
+  return score*100 + Math.log10(o.Karma+1)*8 + tok.phrases.length*40;
+}
+
+/* ---------- Main update pipeline ---------- */
+function update(){
+  const q=$('#search').value.trim();
+  const tok=tokenize(q);
+  const kFloor=+$('#karmaFloor').value;
+  const wFloor=+$('#wcFloor').value;
+  const yMin=+$('#yearMin').value, yMax=+$('#yearMax').value;
+  const cat=$('#catSel').value;
+  const auth=$('#authorFilter').value.trim().toLowerCase();
+  const tag=$('#tagSel').value;
+  const bmOnly=$('#bmOnly').checked;
+  const sort=$('#sortSel').value;
+  const searching=(tok.words.length||tok.phrases.length);
+
+  // fuzzy expansion only when query present (built lazily, cheap)
+  let expand=null; lastFuzzy=false;
+  if(searching){
+    expand={};
+    for(const w of tok.words){
+      if(w.length>=4 && !VOCAB.has(w)){
+        const cands=[...edits1(w)].filter(c=>VOCAB.has(c));
+        if(cands.length){expand[w]=cands;lastFuzzy=true;}
+      }
+    }
+  }
+
+  let out=[];
+  for(const o of ROWS){
+    if(o.Karma<kFloor) continue;
+    if(o.WordCount<wFloor) continue;
+    if(o.Year<yMin||o.Year>yMax) continue;
+    if(cat && o._cat!==cat) continue;
+    if(auth && o.Author.toLowerCase()!==auth) continue;
+    if(tag && !o.Tags.split(',').map(s=>s.trim()).includes(tag)) continue;
+    if(bmOnly && !BOOKMARKS.has(o.ID)) continue;
+    if(searching){ const sc=searchScore(o,tok,expand); if(sc<0) continue; o._score=sc; }
+    out.push(o);
+  }
+
+  // sort
+  const cmp={
+    relevance:(a,b)=> searching ? b._score-a._score : b.Karma-a.Karma,
+    karma:(a,b)=>b.Karma-a.Karma,
+    pct:(a,b)=>b._pct-a._pct,
+    date_desc:(a,b)=>(b.Date||'').localeCompare(a.Date||''),
+    date_asc:(a,b)=>(a.Date||'').localeCompare(b.Date||''),
+    comments:(a,b)=>b.Comments-a.Comments,
+    title:(a,b)=>a.Title.localeCompare(b.Title)
+  }[sort]||((a,b)=>b.Karma-a.Karma);
+  out.sort(cmp);
+
+  VIEW=out;
+  RENDER_LIMIT=100;
+  renderHist();
+  renderResults();
+  $('#resultCount').textContent=out.length.toLocaleString();
+  $('#readout').innerHTML=`<b>${out.length.toLocaleString()}</b> in view · <b>${ROWS.length.toLocaleString()}</b> total · needle-to-haystack <b>${(100*out.length/ROWS.length).toFixed(1)}%</b>`;
+  $('#fuzzyNote').textContent=lastFuzzy?'≈ fuzzy matches included (typo-tolerant)':'';
+  $('#bmCount').textContent=BOOKMARKS.size;
+  serializeState();
+  updateFilterBadge();
+  saveSettings();
+}
+
+/* ---------- Render: results ---------- */
+function karmaStyle(k){
+  // amber→rust heat scale, data-driven
+  let bg='#EDEFEA',fg='#5A645C';
+  if(k>=400){bg='#9c3a1e';fg='#fff';}
+  else if(k>=150){bg='#c2611f';fg='#fff';}
+  else if(k>=50){bg='#d99a3c';fg='#3a2a10';}
+  else if(k>=10){bg='#ecd9a8';fg='#5a4a22';}
+  return `background:${bg};color:${fg}`;
+}
+function hl(title,tok){
+  if(!tok || (!tok.words.length&&!tok.phrases.length)) return esc(title);
+  let html=esc(title);
+  const terms=[...tok.phrases,...tok.words].filter(Boolean).sort((a,b)=>b.length-a.length);
+  for(const t of terms){
+    try{ html=html.replace(new RegExp('('+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig'),'<mark>$1</mark>'); }catch(e){}
+  }
+  return html;
+}
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function cardHTML(o,tok){
+  const star=BOOKMARKS.has(o.ID);
+  return `<div class="card" data-id="${esc(o.ID)}">
+    <div class="karma" style="${karmaStyle(o.Karma)}">${o.Karma}<small>karma</small></div>
+    <div class="body">
+      <a class="title" href="${esc(o.URL)}" target="_blank" rel="noopener">${hl(o.Title,tok)}</a>
+      <div class="meta">
+        <span class="author alink" data-au="${esc(o.Author||'')}">${esc(o.Author||'—')}</span>
+        <span>${esc(o.Date)}</span>
+        <span>${o.Comments} comments</span>
+        ${o.WordCount?`<span>${o.WordCount.toLocaleString()} words</span>`:''}
+      </div>
+      <span class="cat-tag">${esc(o._cat)}</span>
+    </div>
+    <div class="actions">
+      <button class="icon-btn star ${star?'on':''}" title="Bookmark">${star?'★':'☆'}</button>
+      <button class="icon-btn mlt" title="More like this">≈</button>
+    </div>
+  </div>`;
+}
+function renderResults(){
+  const box=$('#results');
+  if(!VIEW.length){ box.innerHTML='<div class="empty"><b>No posts match.</b><br>Loosen a filter, lower the karma floor, or clear the search.</div>'; return; }
+  const tok=tokenize($('#search').value.trim());
+  const slice=VIEW.slice(0,RENDER_LIMIT);
+  let html=slice.map(o=>cardHTML(o,tok)).join('');
+  if(VIEW.length>RENDER_LIMIT) html+=`<button class="showmore" id="showMore">Show ${Math.min(100,VIEW.length-RENDER_LIMIT)} more · ${(VIEW.length-RENDER_LIMIT).toLocaleString()} hidden</button>`;
+  box.innerHTML=html;
+}
+
+/* ---------- Render: terrain histogram ---------- */
+function renderHist(){
+  const years=[...new Set(ROWS.map(r=>r.Year).filter(Boolean))].sort((a,b)=>a-b);
+  const counts={}; years.forEach(y=>counts[y]=0);
+  VIEW.forEach(o=>{if(counts[o.Year]!=null)counts[o.Year]++;});
+  const max=Math.max(1,...Object.values(counts));
+  const yMin=+$('#yearMin').value, yMax=+$('#yearMax').value;
+  const hist=$('#hist'); hist.innerHTML='';
+  years.forEach(y=>{
+    const b=document.createElement('div');
+    b.className='bar'+(y>=yMin&&y<=yMax?' in':'');
+    b.style.height=(6+94*counts[y]/max)+'%';
+    b.title=`${y}: ${counts[y]} posts`;
+    b.dataset.year=y;
+    hist.appendChild(b);
+  });
+}
+
+/* ---------- Histogram drag-to-select ---------- */
+(function(){
+  let dragging=false,startY=null;
+  const hist=$('#hist');
+  function yearAt(e){const el=document.elementFromPoint(e.clientX,e.clientY);return el&&el.dataset&&el.dataset.year?+el.dataset.year:null;}
+  hist.addEventListener('pointerdown',e=>{const y=yearAt(e);if(y){dragging=true;startY=y;hist.setPointerCapture(e.pointerId);}});
+  hist.addEventListener('pointermove',e=>{if(!dragging)return;const y=yearAt(e);if(y){applyYears(Math.min(startY,y),Math.max(startY,y));}});
+  hist.addEventListener('pointerup',e=>{if(dragging&&startY){const y=yearAt(e)||startY;applyYears(Math.min(startY,y),Math.max(startY,y));}dragging=false;startY=null;});
+  function applyYears(a,b){$('#yearMin').value=a;$('#yearMax').value=b;update();}
+})();
+
+/* ---------- Bookmarks ---------- */
+function toggleBookmark(id){
+  if(BOOKMARKS.has(id)) BOOKMARKS.delete(id); else BOOKMARKS.add(id);
+  localStorage.setItem('lw_bookmarks',JSON.stringify([...BOOKMARKS]));
+  $('#bmCount').textContent=BOOKMARKS.size;
+}
+
+/* ---------- Discovery: more like this ---------- */
+function moreLikeThis(o){
+  const tags=new Set(o.Tags.split(',').map(s=>s.trim()).filter(Boolean));
+  const words=new Set(o._words.filter(w=>w.length>4));
+  const scored=[];
+  for(const r of ROWS){
+    if(r.ID===o.ID) continue;
+    let s=0;
+    r.Tags.split(',').forEach(t=>{if(tags.has(t.trim()))s+=2;});
+    for(const w of r._words) if(words.has(w)) s+=1;
+    if(s>0) scored.push([s+Math.log10(r.Karma+1),r]);
+  }
+  scored.sort((a,b)=>b[0]-a[0]);
+  openPanel('More like this','“'+o.Title.slice(0,60)+'”',
+    scored.slice(0,15).map(([,r])=>cardHTML(r,null)).join('')||'<div class="empty">No close neighbours found.</div>');
+}
+
+/* ---------- Discovery: author deep-dive ---------- */
+function authorDeepDive(){
+  const agg={};
+  ROWS.forEach(r=>{const a=r.Author||'—';(agg[a]=agg[a]||{n:0,k:0}); agg[a].n++; agg[a].k+=r.Karma;});
+  const rows=Object.entries(agg).filter(([,v])=>v.n>=5)
+    .map(([a,v])=>({a,n:v.n,avg:v.k/v.n,tot:v.k}))
+    .sort((x,y)=>y.avg-x.avg).slice(0,80);
+  const body=`<div class="aulist">
+    <div class="arow"><span class="ahdr">Author</span><span class="ahdr anum">posts</span><span class="ahdr anum">avg karma</span><span class="ahdr anum">total</span></div>
+    ${rows.map(r=>`<div class="arow"><span class="aname" data-au="${esc(r.a)}">${esc(r.a)}</span><span class="anum">${r.n}</span><span class="anum">${r.avg.toFixed(0)}</span><span class="anum">${r.tot.toLocaleString()}</span></div>`).join('')}
+  </div>`;
+  openPanel('Authors by average karma','min. 5 posts · click a name to filter',body);
+}
+
+/* ---------- Discovery: tag co-occurrence ---------- */
+function tagCooc(){
+  const seed=$('#tagSel').value;
+  if(!seed){ openPanel('Tag neighbours','pick a tag in the sidebar first','<div class="empty">Choose a tag in the left panel, then reopen this.</div>'); return; }
+  const co={};
+  ROWS.forEach(r=>{const ts=r.Tags.split(',').map(s=>s.trim());if(ts.includes(seed))ts.forEach(t=>{if(t&&t!==seed)co[t]=(co[t]||0)+1;});});
+  const rows=Object.entries(co).sort((a,b)=>b[1]-a[1]).slice(0,30);
+  const body=`<div class="cooc">${rows.map(([t,n])=>`<div class="crow" data-tag="${esc(t)}"><span>${esc(t)}</span><span class="cn">${n} shared</span></div>`).join('')||'<div class="empty">No co-occurring tags.</div>'}</div>`;
+  openPanel('Tags that travel with “'+seed+'”','click one to filter by it',body);
+}
+
+/* ---------- Surprise ---------- */
+function surprise(){
+  if(!VIEW.length) return;
+  const o=VIEW[Math.floor(Math.random()*VIEW.length)];
+  openPanel('Surprise','random pick from your current view',cardHTML(o,null));
+}
+
+/* ---------- CSV export ---------- */
+function toCSV(rows){
+  const head=REQUIRED.join(',');
+  const q=v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const lines=rows.map(o=>[o.Title,o.URL,o.Author,o.Date,o.Year,o.Karma,o.Votes,o.Comments,o.WordCount,o.Tags,o.ID].map(q).join(','));
+  return head+'\n'+lines.join('\n');
+}
+function download(name,text){
+  const blob=new Blob([text],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();
+}
+
+/* ---------- Panel ---------- */
+function openPanel(title,sub,body){
+  $('#panelTitle').textContent=title;$('#panelSub').textContent=sub;$('#panelBody').innerHTML=body;
+  $('#overlay').classList.add('show');
+}
+function closePanel(){$('#overlay').classList.remove('show');}
+
+/* ---------- Settings persistence ---------- */
+function saveSettings(){
+  localStorage.setItem('lw_settings',JSON.stringify({
+    k:$('#karmaFloor').value,w:$('#wcFloor').value,sort:$('#sortSel').value,cat:$('#catSel').value
+  }));
+}
+function restoreSettings(){
+  try{
+    const s=JSON.parse(localStorage.getItem('lw_settings')||'{}');
+    if(s.k){$('#karmaFloor').value=s.k;$('#karmaVal').textContent=s.k;}
+    if(s.w){$('#wcFloor').value=s.w;$('#wcVal').textContent=s.w;}
+    if(s.sort)$('#sortSel').value=s.sort;
+    if(s.cat)$('#catSel').value=s.cat;
+  }catch(e){}
+}
+
+/* ---------- Wire up events ---------- */
+// Dark mode
+$('#themeBtn').onclick=toggleTheme;
+$('#themeBtn').textContent=document.documentElement.dataset.theme==='dark'?'☀️':'🌙';
+
+// Share view
+$('#shareBtn').onclick=shareView;
+
+// Mobile sidebar toggle
+$('#filterToggle').onclick=()=>{
+  $('#filterToggle').textContent=
+    $('aside.controls').classList.toggle('open')?'Close ✕':'Filters '+(activeFilters()||'');
+  $('aside.controls').classList.contains('open')
+    ? $('#backdrop').classList.add('show')
+    : $('#backdrop').classList.remove('show');
+};
+$('#backdrop').onclick=()=>{
+  $('aside.controls').classList.remove('open');
+  $('#backdrop').classList.remove('show');
+  updateFilterBadge();
+};
+
+let deb;
+$('#search').addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(update,130);});
+$('#karmaFloor').addEventListener('input',e=>{$('#karmaVal').textContent=e.target.value;update();});
+$('#wcFloor').addEventListener('input',e=>{$('#wcVal').textContent=e.target.value;update();});
+['#yearMin','#yearMax','#catSel','#tagSel','#sortSel','#authorFilter','#bmOnly'].forEach(s=>$(s).addEventListener('change',update));
+$('#authorFilter').addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(update,200);});
+
+$('#surpriseBtn').onclick=surprise;
+$('#authorsBtn').onclick=authorDeepDive;
+$('#tagCoocBtn').onclick=tagCooc;
+$('#exportBtn').onclick=()=>download('haystack-view.csv',toCSV(VIEW));
+$('#exportBmBtn').onclick=()=>download('haystack-bookmarks.csv',toCSV(ROWS.filter(r=>BOOKMARKS.has(r.ID))));
+$('#panelClose').onclick=closePanel;
+$('#overlay').onclick=e=>{if(e.target===$('#overlay'))closePanel();};
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') closePanel();
+  if(e.key==='/'&&document.activeElement!==$('#search')){e.preventDefault();$('#search').focus();}
+});
+
+// event delegation for result cards
+$('#results').addEventListener('click',e=>{
+  if(e.target.id==='showMore'){RENDER_LIMIT+=100;renderResults();return;}
+  // click author name in card → filter by that author
+  if(e.target.classList.contains('alink')&&e.target.dataset.au){
+    $('#authorFilter').value=e.target.dataset.au; update(); return;
+  }
+  const card=e.target.closest('.card'); if(!card) return;
+  const id=card.dataset.id; const o=ROWS.find(r=>r.ID===id);
+  if(e.target.classList.contains('star')){toggleBookmark(id);e.target.classList.toggle('on');e.target.textContent=BOOKMARKS.has(id)?'★':'☆';return;}
+  if(e.target.classList.contains('mlt')){moreLikeThis(o);return;}
+});
+
+// panel delegation (author / tag / star / mlt clicks)
+$('#panelBody').addEventListener('click',e=>{
+  if(e.target.dataset.au!=null){$('#authorFilter').value=e.target.dataset.au;closePanel();update();}
+  if(e.target.closest('[data-tag]')){const t=e.target.closest('[data-tag]').dataset.tag;$('#tagSel').value=t;closePanel();update();}
+  if(e.target.classList.contains('alink')&&e.target.dataset.au){closePanel();$('#authorFilter').value=e.target.dataset.au;update();return;}
+  const card=e.target.closest('.card');
+  if(card){const id=card.dataset.id;
+    if(e.target.classList.contains('star')){toggleBookmark(id);e.target.classList.toggle('on');e.target.textContent=BOOKMARKS.has(id)?'★':'☆';}
+    if(e.target.classList.contains('mlt')){const o=ROWS.find(r=>r.ID===id);if(o)moreLikeThis(o);}
+  }
+});
+
+/* ── Kick off auto-load ── */
+autoLoad();
+</script>
+</body>
+</html>

@@ -48,9 +48,6 @@ input,select{font-family:inherit}
 [data-theme="dark"] .aulist .arow:hover{background:var(--raised);}
 [data-theme="dark"] .cooc .crow:hover{background:var(--raised);}
 [data-theme="dark"] .arow-hdr{background:var(--raised-2)!important;}
-[data-theme="dark"] .drawer{box-shadow:-8px 0 40px rgba(0,0,0,.5)}
-[data-theme="dark"] .fb-sel{background:var(--raised)}
-[data-theme="dark"] .card:hover{box-shadow:0 6px 24px rgba(0,0,0,.4);border-color:var(--pine)}
 
 /* ---------- Theme transition (circular reveal) ---------- */
 ::view-transition-old(root),
@@ -69,86 +66,89 @@ input,select{font-family:inherit}
 .load-err code{font-family:var(--mono);background:var(--raised);padding:2px 6px;border-radius:3px;font-size:12px}
 
 /* ---------- App shell ---------- */
-#app{display:none;flex-direction:column;height:100vh;overflow:hidden}
-header.topbar{background:var(--paper);border-bottom:1px solid var(--line);flex-shrink:0;position:sticky;top:0;z-index:20}
-.topbar-r1{display:flex;align-items:center;gap:10px;padding:11px 24px 8px}
-.topbar-r2{display:flex;align-items:center;gap:7px;padding:0 24px 11px;flex-wrap:wrap}
+#app{display:none;grid-template-rows:auto 1fr;height:100vh;overflow:hidden}
+header.topbar{display:flex;align-items:center;gap:18px;padding:11px 18px;background:var(--raised);border-bottom:1px solid var(--line)}
 .topbar .mark{font-family:var(--serif);font-weight:600;font-size:20px;letter-spacing:-.01em}
 .topbar .mark em{font-style:italic;color:var(--pine)}
 .topbar .spacer{flex:1}
-.ghost-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:5px 11px;border-radius:6px;font-size:12px;transition:.15s;cursor:pointer}
+.ghost-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:6px 12px;border-radius:6px;font-size:12.5px;transition:.15s}
 .ghost-btn:hover{border-color:var(--pine);color:var(--pine)}
-/* Search (compact, lives in topbar row 2) */
-.searchbox{position:relative;flex:1;max-width:460px;min-width:160px}
-.searchbox input{width:100%;padding:8px 12px 8px 33px;font-size:13.5px;border:1.5px solid var(--line);border-radius:8px;background:var(--raised-2);color:var(--ink);font-family:var(--serif)}
-.searchbox input:focus{border-color:var(--pine);outline:none}
-.searchbox .mag{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint);font-size:14px;pointer-events:none}
-.count{font-size:12px;color:var(--ink-soft)}
-.fuzzynote{font-family:var(--mono);font-size:11px;color:var(--pine)}
-/* Quality pills (in topbar row 2) */
-.q-pills{display:flex;gap:3px;align-items:center}
-.qp{border:1.5px solid var(--line);background:transparent;color:var(--ink-soft);padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:500;cursor:pointer;transition:.15s;white-space:nowrap}
-.qp:hover{border-color:var(--pine);color:var(--pine)}
-.qp.active{background:var(--pine);color:#fff;border-color:var(--pine)}
-.fb-divider{width:1px;height:18px;background:var(--line);margin:0 3px;flex-shrink:0}
-.fb-sel{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:4px 22px 4px 10px;font-size:11.5px;color:var(--ink-soft);cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center;min-width:86px;transition:.15s}
-.fb-sel:hover,.fb-sel:focus{border-color:var(--pine);color:var(--ink);outline:none}
-.drawer-btn{background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:13px;color:var(--ink-soft);cursor:pointer;transition:.15s;flex-shrink:0}
-.drawer-btn:hover{border-color:var(--pine);color:var(--pine)}
-.drawer-btn.active{border-color:var(--pine);color:var(--pine);background:var(--pine-tint)}
 
-/* ---------- Slide-in drawer ---------- */
-.drawer{position:fixed;top:0;right:0;bottom:0;width:320px;background:var(--paper);border-left:1px solid var(--line);z-index:50;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;box-shadow:-8px 0 28px rgba(0,0,0,.1)}
-.drawer.open{transform:translateX(0)}
-.drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:49}
-.drawer-backdrop.show{display:block}
-.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);font-weight:600;font-size:14px;flex-shrink:0}
-.close-drawer{background:transparent;border:none;font-size:22px;color:var(--ink-faint);cursor:pointer;line-height:1;padding:2px 4px;transition:.12s}
-.close-drawer:hover{color:var(--ink)}
-.drawer-body{overflow-y:auto;padding:18px 20px 60px;flex:1}
-.drw-grp{margin-bottom:22px}
-.drw-grp h4{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;margin:0 0 9px}
+/* body split */
+.split{display:grid;grid-template-columns:1fr 286px;overflow:hidden}
+aside.controls{order:2;border-left:1px solid var(--line);overflow-y:auto;padding:14px 16px 60px;background:var(--raised-2)}
+main.results-pane{order:1;overflow-y:auto;padding:0 0 80px}
+
+/* sidebar groups */
+.grp{margin-bottom:20px}
+.grp h3{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;margin:0 0 9px}
+.field{margin-bottom:11px}
+.field label{display:block;font-size:11.5px;color:var(--ink-soft);margin-bottom:4px}
+.field .val{font-family:var(--mono);color:var(--ink);font-weight:500}
+select,.txt{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--raised-2);color:var(--ink);font-size:13px}
+input[type=range]{width:100%;accent-color:var(--pine)}
+.row2{display:flex;gap:8px}
+.row2>*{flex:1}
 .chk{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-soft);cursor:pointer}
 .chk input{accent-color:var(--pine)}
-select,.txt{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--raised-2);color:var(--ink);font-size:13px}
+
 .chips{display:flex;flex-wrap:wrap;gap:5px}
-.chip{background:var(--pine-tint);color:var(--pine-deep);border:none;padding:4px 9px;border-radius:20px;font-size:11.5px;transition:.12s;cursor:pointer}
+.chip{background:var(--pine-tint);color:var(--pine-deep);border:none;padding:4px 9px;border-radius:20px;font-size:11.5px;transition:.12s}
 .chip:hover{background:var(--pine);color:#fff}
-.disc-btn{width:100%;text-align:left;background:var(--raised-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12.5px;color:var(--ink);transition:.12s;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.disc-btn{width:100%;text-align:left;background:var(--raised-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12.5px;color:var(--ink);transition:.12s;display:flex;justify-content:space-between;align-items:center}
 .disc-btn:hover{border-color:var(--pine);color:var(--pine)}
 .disc-btn span.k{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
-.era-list{display:flex;flex-direction:column;gap:3px;margin-bottom:4px}
+/* Quality pills */
+.q-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.qp{border:1.5px solid var(--line);background:transparent;color:var(--ink-soft);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;transition:.15s;white-space:nowrap}
+.qp:hover{border-color:var(--pine);color:var(--pine)}
+.qp.active{background:var(--pine);color:#fff;border-color:var(--pine)}
+.q-hint{font-size:11px;color:var(--ink-faint);margin-top:5px;font-family:var(--mono);min-height:14px}
+/* Era buttons */
+.era-list{display:flex;flex-direction:column;gap:3px;margin-top:7px}
 .era-btn{text-align:left;border:1.5px solid var(--line);background:transparent;color:var(--ink-soft);padding:7px 10px;border-radius:6px;font-size:12px;cursor:pointer;transition:.15s;line-height:1.25;width:100%}
 .era-btn:hover{border-color:var(--pine);color:var(--ink);background:var(--pine-tint)}
 .era-btn.active{border-color:var(--pine);background:var(--pine-tint);color:var(--ink)}
 .era-yr{display:block;font-family:var(--mono);font-size:10px;color:var(--ink-faint);margin-top:2px}
 .era-btn.active .era-yr{color:var(--pine)}
-.q-hint{font-size:11px;color:var(--ink-faint);margin-top:4px;font-family:var(--mono)}
+/* Sort pills */
+.sort-list{display:flex;flex-direction:column;gap:2px;margin-top:7px}
+.sp{text-align:left;border:1px solid transparent;background:transparent;color:var(--ink-soft);padding:5px 9px;border-radius:5px;font-size:12.5px;cursor:pointer;transition:.12s;width:100%}
+.sp:hover{background:var(--raised);color:var(--ink)}
+.sp.active{background:var(--pine-tint);color:var(--pine);font-weight:600}
 
-/* ---------- Magazine card grid ---------- */
-.results-wrap{flex:1;overflow-y:auto}
-.results{padding:20px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;align-items:start}
-.card{background:var(--raised-2);border:1px solid var(--line);border-radius:10px;padding:18px 18px 16px;display:flex;flex-direction:column;min-height:156px;transition:box-shadow .15s,border-color .15s}
-.card:hover{box-shadow:0 6px 24px rgba(0,0,0,.09);border-color:var(--pine)}
-.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:11px}
-.card-karma{font-family:var(--mono);font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:20px;white-space:nowrap;line-height:1.5}
-.card .title{font-family:var(--serif);font-size:15.5px;font-weight:500;line-height:1.42;color:var(--ink);text-decoration:none;display:block;flex:1}
-.card .title:hover{color:var(--pine)}
-.card .title mark{background:var(--pine-tint);color:inherit;padding:0 1px;border-radius:2px}
-.card-footer{margin-top:auto;padding-top:13px;display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
-.card-meta{font-family:var(--mono);font-size:11px;color:var(--ink-faint);line-height:1.65;min-width:0}
-.card-meta .author{color:var(--ink-soft)}
-.card-meta .alink{cursor:pointer}
-.card-meta .alink:hover{color:var(--pine);text-decoration:underline}
-.cat-tag{display:inline-block;font-family:var(--sans);font-size:10px;background:var(--pine-tint);color:var(--pine-deep);padding:1px 6px;border-radius:3px}
-.card-actions{display:flex;gap:4px;flex-shrink:0}
-.icon-btn{background:transparent;border:1px solid var(--line);border-radius:6px;width:28px;height:28px;font-size:13px;color:var(--ink-faint);display:flex;align-items:center;justify-content:center;transition:.12s;cursor:pointer}
+/* search bar */
+.searchwrap{position:sticky;top:0;z-index:5;background:var(--paper);padding:14px 22px 10px;border-bottom:1px solid var(--line-soft)}
+.searchbox{position:relative}
+.searchbox input{width:100%;padding:13px 15px 13px 40px;font-size:16px;border:1px solid var(--line);border-radius:9px;background:var(--raised-2);color:var(--ink);font-family:var(--serif)}
+.searchbox input:focus{border-color:var(--pine)}
+.searchbox .mag{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink-faint)}
+.searchmeta{display:flex;justify-content:space-between;align-items:center;margin-top:9px;font-size:12px;color:var(--ink-soft)}
+.searchmeta .count b{color:var(--ink);font-family:var(--mono);font-weight:500}
+.fuzzynote{font-family:var(--mono);font-size:11px;color:var(--pine)}
+
+/* results */
+.results{padding:6px 22px 0}
+.card{display:grid;grid-template-columns:54px 1fr auto;gap:14px;align-items:start;padding:13px 14px;border:1px solid transparent;border-bottom:1px solid var(--line-soft);border-radius:8px}
+.card:hover{background:var(--raised-2);border-color:var(--line)}
+.karma{font-family:var(--mono);font-weight:500;font-size:13px;text-align:center;padding:4px 0;border-radius:6px;line-height:1.1}
+.karma small{display:block;font-size:9px;color:var(--ink-faint);font-weight:400;margin-top:1px}
+.card .body .title{font-family:var(--serif);font-size:16.5px;font-weight:500;color:var(--ink);text-decoration:none;line-height:1.3}
+.card .body .title:hover{color:var(--pine);text-decoration:underline}
+.card .body .title mark{background:var(--pine-tint);color:inherit;padding:0 1px;border-radius:2px}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);margin-top:5px;display:flex;flex-wrap:wrap;gap:4px 12px}
+.meta .author{color:var(--ink-soft)}
+.meta .alink{cursor:pointer}
+.meta .alink:hover{color:var(--pine);text-decoration:underline}
+.cat-tag{display:inline-block;font-family:var(--sans);font-size:10.5px;background:var(--pine-tint);color:var(--pine-deep);padding:1px 7px;border-radius:4px;margin-top:6px}
+.actions{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.icon-btn{background:transparent;border:1px solid var(--line);border-radius:6px;width:30px;height:30px;font-size:14px;color:var(--ink-faint);display:flex;align-items:center;justify-content:center;transition:.12s}
 .icon-btn:hover{border-color:var(--pine);color:var(--pine)}
 .icon-btn.on{background:var(--pine);border-color:var(--pine);color:#fff}
-.icon-btn.mlt{font-size:11px}
-.showmore{display:block;grid-column:1/-1;margin:6px auto 0;background:var(--raised-2);border:1px solid var(--line);border-radius:7px;padding:10px 24px;color:var(--ink-soft);font-size:13px;cursor:pointer}
+.icon-btn.mlt{font-size:12px}
+.showmore{display:block;margin:18px auto 0;background:var(--raised-2);border:1px solid var(--line);border-radius:7px;padding:10px 22px;color:var(--ink-soft);font-size:13px}
 .showmore:hover{border-color:var(--pine);color:var(--pine)}
-.empty{grid-column:1/-1;text-align:center;color:var(--ink-faint);padding:80px 20px;font-size:14px}
+.empty{text-align:center;color:var(--ink-faint);padding:70px 20px;font-size:14px}
 .empty b{color:var(--ink-soft)}
 
 /* overlay panel */
@@ -158,8 +158,8 @@ select,.txt{width:100%;padding:7px 9px;border:1px solid var(--line);border-radiu
 .panel-head{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;border-bottom:1px solid var(--line)}
 .panel-head h2{font-family:var(--serif);font-size:19px;font-weight:600;margin:0}
 .panel-head .sub{font-size:12px;color:var(--ink-faint);font-family:var(--mono)}
-.panel-body{overflow-y:auto;padding:10px 12px 18px;display:grid;grid-template-columns:1fr;gap:10px}
-.panel .card{min-height:unset;padding:14px 16px}
+.panel-body{overflow-y:auto;padding:8px 12px 18px}
+.panel .card{grid-template-columns:50px 1fr auto}
 .close-x{background:transparent;border:none;font-size:22px;color:var(--ink-faint);line-height:1}
 .close-x:hover{color:var(--ink)}
 .aulist .arow{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;padding:9px 12px;border-bottom:1px solid var(--line-soft);align-items:center;font-size:13px}
@@ -172,18 +172,19 @@ select,.txt{width:100%;padding:7px 9px;border:1px solid var(--line);border-radiu
 .cooc .crow:hover{background:var(--raised);color:var(--pine)}
 .cooc .cn{font-family:var(--mono);font-size:12px;color:var(--ink-faint)}
 
-@media(max-width:700px){
-  .topbar-r1{padding:9px 16px 6px}
-  .topbar-r2{padding:0 16px 9px;gap:5px}
-  .searchbox{max-width:100%;min-width:0}
-  .q-pills{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
-  .fb-divider{display:none}
-  .results{padding:14px 14px;grid-template-columns:1fr}
-  .drawer{width:min(320px,100%)}
+@media(max-width:760px){
+  .split{grid-template-columns:1fr}
+  aside.controls{position:fixed;inset:0 0 0 20%;z-index:30;display:none;box-shadow:-4px 0 20px rgba(0,0,0,.25);transform:translateX(100%);transition:transform .22s ease}
+  aside.controls.open{display:block;transform:translateX(0)}
+  .card{grid-template-columns:46px 1fr}
+  .actions{flex-direction:row;grid-column:1/-1;justify-content:flex-start;margin-top:4px}
+  .filter-toggle{display:inline-flex;align-items:center;gap:6px}
   .ghost-btn.desktop-only{display:none}
   .share-btn.desktop-only{display:none}
-  .count.desktop-only{display:none}
-  .site-footer{padding:16px}
+  .theme-btn{padding:5px 8px}
+  .qfilters{overflow-x:auto;flex-wrap:nowrap;padding:6px 14px}
+  .qf-lbl{display:none}
+  .clear-btn{display:none}
 }
 
 /* ---------- Author browse panel ---------- */
@@ -198,9 +199,23 @@ select,.txt{width:100%;padding:7px 9px;border:1px solid var(--line);border-radiu
 .theme-btn:hover{border-color:var(--pine);color:var(--pine)}
 
 /* ---------- Share / mobile btns ---------- */
-.share-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:5px 11px;border-radius:6px;font-size:12px;transition:.15s;cursor:pointer}
+.share-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:6px 12px;border-radius:6px;font-size:12.5px;transition:.15s}
 .share-btn:hover{border-color:var(--pine);color:var(--pine)}
 .share-btn.copied{border-color:var(--pine);color:var(--pine);background:var(--pine-tint)}
+.filter-toggle{display:none;background:var(--pine);color:#fff;border:none;padding:7px 13px;border-radius:6px;font-size:12.5px;font-weight:500;position:relative}
+.filter-badge{position:absolute;top:-5px;right:-5px;background:#c04040;color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 5px;line-height:1.4;display:none}
+.filter-badge.show{display:block}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:25}
+.sidebar-backdrop.show{display:block}
+
+/* ---------- Quick filters row ---------- */
+.qfilters{background:var(--raised);border-bottom:1px solid var(--line);padding:7px 18px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.qf-lbl{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;margin-right:4px;white-space:nowrap}
+.qchip{background:var(--raised-2);border:1px solid var(--line);color:var(--ink-soft);padding:4px 10px;border-radius:20px;font-size:11.5px;transition:.12s;white-space:nowrap}
+.qchip:hover{border-color:var(--pine);color:var(--pine);background:var(--pine-tint)}
+.clear-btn{margin-left:auto;background:transparent;border:none;font-size:11px;color:var(--ink-faint);text-decoration:underline;cursor:pointer;padding:0}
+.clear-btn:hover{color:var(--pine)}
+.active-note{font-family:var(--mono);font-size:11px;color:var(--pine);white-space:nowrap}
 
 /* ---------- Footer ---------- */
 .site-footer{padding:20px 22px;font-size:12px;color:var(--ink-faint);border-top:1px solid var(--line-soft);font-family:var(--mono)}
@@ -232,62 +247,47 @@ select,.txt{width:100%;padding:7px 9px;border:1px solid var(--line);border-radiu
 <!-- APP -->
 <div id="app">
   <header class="topbar">
-    <div class="topbar-r1">
-      <div class="mark">Hay<em>stack</em></div>
-      <div class="spacer"></div>
-      <span class="count desktop-only" id="resultCount"></span>
-      <button class="share-btn desktop-only" id="shareBtn" title="Copy link to this view">Share</button>
-      <button class="ghost-btn desktop-only" id="authorsBtn">Authors</button>
-      <button class="theme-btn" id="themeBtn" title="Toggle dark mode">🌙</button>
-    </div>
-    <div class="topbar-r2">
-      <div class="searchbox">
-        <span class="mag">⌕</span>
-        <input id="search" placeholder='Search 49,000 posts by title, author, topic…' autocomplete="off">
-      </div>
-      <span class="fuzzynote" id="fuzzyNote"></span>
-      <div class="spacer"></div>
-      <div class="q-pills">
-        <button class="qp active" data-k="0">All</button>
-        <button class="qp" data-k="25">Noticed</button>
-        <button class="qp" data-k="75">Good</button>
-        <button class="qp" data-k="200">Great</button>
-        <button class="qp" data-k="500">Essential</button>
-      </div>
-      <div class="fb-divider"></div>
-      <select class="fb-sel" id="eraQuick">
-        <option value="">All time</option>
-        <option value="2006:2010">Founding era</option>
-        <option value="2011:2014">Classic LW</option>
-        <option value="2015:2017">Diaspora</option>
-        <option value="2018:2020">Renaissance</option>
-        <option value="2021:2099">AI focus</option>
-      </select>
-      <select class="fb-sel" id="catSel"><option value="">All themes</option></select>
-      <select class="fb-sel" id="sortSel">
-        <option value="relevance">Best match</option>
-        <option value="karma">Top karma</option>
-        <option value="pct">Year rank</option>
-        <option value="date_desc">Newest</option>
-        <option value="date_asc">Oldest</option>
-        <option value="comments">Most discussed</option>
-      </select>
-      <button class="drawer-btn" id="drawerBtn">⊞</button>
-      <input type="hidden" id="karmaFloor" value="0">
-      <select id="yearMin" style="display:none"></select>
-      <select id="yearMax" style="display:none"></select>
-    </div>
+    <div class="mark">Hay<em>stack</em></div>
+    <div class="spacer"></div>
+    <button class="share-btn desktop-only" id="shareBtn" title="Copy link to this view">🔗 Share view</button>
+    <button class="ghost-btn desktop-only" id="authorsBtn">Authors</button>
+    <button class="theme-btn" id="themeBtn" title="Toggle dark mode">🌙</button>
+    <button class="filter-toggle" id="filterToggle">Filters <span class="filter-badge" id="filterBadge">0</span></button>
   </header>
 
-  <!-- Slide-in filter drawer -->
-  <div class="drawer" id="drawer">
-    <div class="drawer-head">
-      <span>Filters &amp; Discover</span>
-      <button class="close-drawer" id="closeDrawer">×</button>
-    </div>
-    <div class="drawer-body">
-      <div class="drw-grp">
-        <h4>Era</h4>
+  <div class="qfilters" id="qfilters">
+    <span class="qf-lbl">Quick:</span>
+    <span class="active-note" id="activeNote" style="display:none"></span>
+  </div>
+
+  <div class="sidebar-backdrop" id="backdrop"></div>
+  <div class="split">
+    <aside class="controls">
+
+      <div class="grp">
+        <h3>Discover</h3>
+        <button class="disc-btn" id="surpriseBtn">Surprise me <span class="k">random high-karma</span></button>
+        <button class="disc-btn" id="authorsBtnSide">Browse authors A→Z <span class="k">searchable</span></button>
+        <button class="disc-btn" id="tagCoocBtn">Tag neighbours <span class="k">co-occurrence</span></button>
+        <button class="disc-btn" id="exportBtn">Export this view <span class="k">.csv</span></button>
+        <button class="disc-btn" id="exportBmBtn">Export bookmarks <span class="k">.csv</span></button>
+      </div>
+
+      <div class="grp">
+        <h3>Quality</h3>
+        <div class="q-pills">
+          <button class="qp active" data-k="0">All</button>
+          <button class="qp" data-k="25">Noticed</button>
+          <button class="qp" data-k="75">Good</button>
+          <button class="qp" data-k="200">Great</button>
+          <button class="qp" data-k="500">Essential</button>
+        </div>
+        <div class="q-hint" id="qHint">All posts, no karma floor</div>
+        <input type="hidden" id="karmaFloor" value="0">
+      </div>
+
+      <div class="grp">
+        <h3>Era</h3>
         <div class="era-list">
           <button class="era-btn active" data-y1="" data-y2="">All time<span class="era-yr">2006 – present</span></button>
           <button class="era-btn" data-y1="2006" data-y2="2010">Founding era<span class="era-yr">2006 – 2010 · Sequences, OB spinoff</span></button>
@@ -296,40 +296,73 @@ select,.txt{width:100%;padding:7px 9px;border:1px solid var(--line);border-radiu
           <button class="era-btn" data-y1="2018" data-y2="2020">Renaissance<span class="era-yr">2018 – 2020 · LW 2.0, EA expansion</span></button>
           <button class="era-btn" data-y1="2021" data-y2="2099">AI focus<span class="era-yr">2021 – now · Alignment urgency, GPT era</span></button>
         </div>
+        <select id="yearMin" style="display:none"></select>
+        <select id="yearMax" style="display:none"></select>
       </div>
-      <div class="drw-grp">
-        <h4>Author</h4>
+
+      <div class="grp">
+        <h3>Theme</h3>
+        <select id="catSel"><option value="">All themes</option></select>
+      </div>
+
+      <div class="grp">
+        <h3>Author</h3>
         <input class="txt" id="authorFilter" list="authorList" placeholder="any author">
         <datalist id="authorList"></datalist>
       </div>
-      <div class="drw-grp">
-        <h4>Tag</h4>
+
+      <div class="grp">
+        <h3>Tag</h3>
         <select id="tagSel"><option value="">any tag</option></select>
       </div>
-      <div class="drw-grp">
-        <label class="chk"><input type="checkbox" id="bmOnly"> Bookmarked only (<span id="bmCount">0</span>)</label>
+
+      <div class="grp">
+        <h3>Sort</h3>
+        <div class="sort-list">
+          <button class="sp active" data-sort="relevance">Best match</button>
+          <button class="sp" data-sort="karma">Top karma</button>
+          <button class="sp" data-sort="pct">Year percentile rank</button>
+          <button class="sp" data-sort="date_desc">Newest first</button>
+          <button class="sp" data-sort="date_asc">Oldest first</button>
+          <button class="sp" data-sort="comments">Most discussed</button>
+        </div>
+        <select id="sortSel" style="display:none">
+          <option value="relevance">Best match (when searching)</option>
+          <option value="karma">Karma — high to low</option>
+          <option value="pct">Karma percentile in its year</option>
+          <option value="date_desc">Newest first</option>
+          <option value="date_asc">Oldest first</option>
+          <option value="comments">Most discussed</option>
+          <option value="title">Title A→Z</option>
+        </select>
       </div>
-      <div class="drw-grp">
-        <h4>Discover</h4>
-        <button class="disc-btn" id="surpriseBtn">Surprise me <span class="k">random high-karma</span></button>
-        <button class="disc-btn" id="authorsBtnSide">Browse authors A→Z <span class="k">searchable</span></button>
-        <button class="disc-btn" id="tagCoocBtn">Tag neighbours <span class="k">co-occurrence</span></button>
-        <button class="disc-btn" id="exportBtn">Export this view <span class="k">.csv</span></button>
-        <button class="disc-btn" id="exportBmBtn">Export bookmarks <span class="k">.csv</span></button>
+
+      <div class="grp">
+        <label class="chk"><input type="checkbox" id="bmOnly"> Bookmarked only (<span id="bmCount">0</span>) <span style="font-size:10px;color:var(--ink-faint)">· this device</span></label>
       </div>
-      <div class="drw-grp">
-        <h4>Starter reads</h4>
+
+      <div class="grp">
+        <h3>Starter reads</h3>
         <div class="chips" id="starterChips"></div>
       </div>
-    </div>
-  </div>
-  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+    </aside>
 
-  <div class="results-wrap">
-    <div class="results" id="results"></div>
-    <footer class="site-footer">
-      Data from <a href="https://www.lesswrong.com" target="_blank" rel="noopener">LessWrong</a> · <span id="dataDate"></span> · Bookmarks saved to this browser only
-    </footer>
+    <main class="results-pane">
+      <div class="searchwrap">
+        <div class="searchbox">
+          <span class="mag">⌕</span>
+          <input id="search" placeholder='Search titles, authors, tags — "quote" for exact phrase' autocomplete="off">
+        </div>
+        <div class="searchmeta">
+          <span class="count" id="resultCount"></span>
+          <span class="fuzzynote" id="fuzzyNote"></span>
+        </div>
+      </div>
+      <div class="results" id="results"></div>
+      <footer class="site-footer">
+        Data from <a href="https://www.lesswrong.com" target="_blank" rel="noopener">LessWrong</a> · <span id="dataDate"></span> · Bookmarks saved to this browser only
+      </footer>
+    </main>
   </div>
 </div>
 
@@ -432,16 +465,26 @@ function shareView(){
   }).catch(()=>prompt('Copy this link:',url));
 }
 
-/* ── Active filter count (drives drawer-btn highlight) ── */
+/* ── Active filter count ── */
 function activeFilters(){
   let n=0;
+  if($('#search').value.trim()) n++;
   if(+$('#karmaFloor').value>0) n++;
   const opts=[...$('#yearMin').options].map(o=>o.value);
   if(opts.length&&($('#yearMin').value!==opts[0]||$('#yearMax').value!==opts[opts.length-1])) n++;
+  if($('#catSel').value) n++;
   if($('#authorFilter').value.trim()) n++;
   if($('#tagSel').value) n++;
   if($('#bmOnly').checked) n++;
   return n;
+}
+function updateFilterBadge(){
+  const n=activeFilters();
+  const badge=$('#filterBadge');
+  badge.textContent=n; badge.classList.toggle('show',n>0);
+  const note=$('#activeNote');
+  if(n>0){note.textContent=n+' filter'+(n>1?'s':'')+' active';note.style.display='';}
+  else note.style.display='none';
 }
 
 /* ── Clear all filters ── */
@@ -453,6 +496,41 @@ function clearAllFilters(){
   $('#catSel').value=''; $('#authorFilter').value=''; $('#tagSel').value='';
   $('#sortSel').value='relevance'; $('#bmOnly').checked=false;
   syncPillStates();update();
+}
+
+/* ── Quick filter presets ── */
+const QUICK_FILTERS=[
+  {label:'500+ karma',  set:{k:500}},
+  {label:'1 000+ karma',set:{k:1000}},
+  {label:'Most discussed',set:{sort:'comments'}},
+  {label:'Newest',      set:{sort:'date_desc'}},
+  {label:'Classic era', set:{y1:'2009',y2:'2014'}},
+  {label:'AI Safety',   set:{cat:'AI · Alignment & Safety'}},
+  {label:'Rationality', set:{cat:'Epistemics & Rationality'}},
+  {label:'Philosophy',  set:{cat:'Ethics & Moral Philosophy'}},
+  {label:'EA',          set:{cat:'Effective Altruism'}},
+];
+function buildQuickFilters(){
+  const row=$('#qfilters');
+  const lbl=row.querySelector('.qf-lbl');
+  const note=$('#activeNote');
+  QUICK_FILTERS.forEach(qf=>{
+    const b=document.createElement('button');
+    b.className='qchip'; b.textContent=qf.label;
+    b.onclick=()=>{
+      if(qf.set.k!==undefined)$('#karmaFloor').value=qf.set.k;
+      if(qf.set.y1!==undefined)$('#yearMin').value=qf.set.y1;
+      if(qf.set.y2!==undefined)$('#yearMax').value=qf.set.y2;
+      if(qf.set.cat!==undefined)$('#catSel').value=qf.set.cat;
+      if(qf.set.sort!==undefined)$('#sortSel').value=qf.set.sort;
+      syncPillStates();update();
+    };
+    row.appendChild(b);
+  });
+  const clr=document.createElement('button');
+  clr.className='clear-btn'; clr.textContent='Clear all filters';
+  clr.onclick=clearAllFilters;
+  row.appendChild(clr);
 }
 
 /* ── Auto-fetch CSV with progress ── */
@@ -710,7 +788,8 @@ function ingest(text){
     o._pct=arr.length>1? lo/(arr.length-1):1;
   }
   buildControls();
-  $('#app').style.display='flex';
+  buildQuickFilters();
+  $('#app').style.display='grid';
   deserializeState();   // URL hash takes priority over localStorage
   restoreSettings();    // fills in any remaining slots localStorage remembers
   syncPillStates();
@@ -839,7 +918,7 @@ function update(){
   $('#fuzzyNote').textContent=lastFuzzy?'≈ fuzzy matches included (typo-tolerant)':'';
   $('#bmCount').textContent=BOOKMARKS.size;
   serializeState();
-  $('#drawerBtn').classList.toggle('active',activeFilters()>0);
+  updateFilterBadge();
   saveSettings();
 }
 
@@ -866,20 +945,20 @@ function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;
 function cardHTML(o,tok){
   const star=BOOKMARKS.has(o.ID);
   return `<div class="card" data-id="${esc(o.ID)}">
-    <div class="card-top">
-      <span class="card-karma" style="${karmaStyle(o.Karma)}">${o.Karma}</span>
-      <div class="card-actions">
-        <button class="icon-btn star ${star?'on':''}" title="Bookmark">${star?'★':'☆'}</button>
-        <button class="icon-btn mlt" title="More like this">≈</button>
-      </div>
-    </div>
-    <a class="title" href="${esc(o.URL)}" target="_blank" rel="noopener">${hl(o.Title,tok)}</a>
-    <div class="card-footer">
-      <div class="card-meta">
+    <div class="karma" style="${karmaStyle(o.Karma)}">${o.Karma}<small>karma</small></div>
+    <div class="body">
+      <a class="title" href="${esc(o.URL)}" target="_blank" rel="noopener">${hl(o.Title,tok)}</a>
+      <div class="meta">
         <span class="author alink" data-au="${esc(o.Author||'')}">${esc(o.Author||'—')}</span>
-        <span>${esc(o.Date)} · ${o.Comments} comments</span>
-        <span class="cat-tag">${esc(o._cat)}</span>
+        <span>${esc(o.Date)}</span>
+        <span>${o.Comments} comments</span>
+        ${o.WordCount?`<span>${o.WordCount.toLocaleString()} words</span>`:''}
       </div>
+      <span class="cat-tag">${esc(o._cat)}</span>
+    </div>
+    <div class="actions">
+      <button class="icon-btn star ${star?'on':''}" title="Bookmark">${star?'★':'☆'}</button>
+      <button class="icon-btn mlt" title="More like this">≈</button>
     </div>
   </div>`;
 }
@@ -1040,42 +1119,43 @@ $('#themeBtn').textContent=document.documentElement.dataset.theme==='dark'?'☀�
 // Share view
 $('#shareBtn').onclick=shareView;
 
+// Mobile sidebar toggle
+$('#filterToggle').onclick=()=>{
+  $('#filterToggle').textContent=
+    $('aside.controls').classList.toggle('open')?'Close ✕':'Filters '+(activeFilters()||'');
+  $('aside.controls').classList.contains('open')
+    ? $('#backdrop').classList.add('show')
+    : $('#backdrop').classList.remove('show');
+};
+$('#backdrop').onclick=()=>{
+  $('aside.controls').classList.remove('open');
+  $('#backdrop').classList.remove('show');
+  updateFilterBadge();
+};
+
 /* ── Sync visual pill/button state from underlying hidden form values ── */
 function syncPillStates(){
   const k=+$('#karmaFloor').value;
+  const hints={0:'All posts, no karma floor',25:'Got community attention (karma ≥ 25)',75:'Genuinely worth reading (karma ≥ 75)',200:'High signal — recommended (karma ≥ 200)',500:'Canonical must-read posts (karma ≥ 500)'};
   document.querySelectorAll('.qp').forEach(b=>b.classList.toggle('active',+b.dataset.k===k));
+  const h=$('#qHint'); if(h)h.textContent=hints[k]||'karma ≥ '+k;
+  const sort=$('#sortSel').value;
+  document.querySelectorAll('.sp').forEach(b=>b.classList.toggle('active',b.dataset.sort===sort));
   const opts=[...$('#yearMin').options].map(o=>o.value);
   if(!opts.length)return;
   const yr1=$('#yearMin').value, yr2=$('#yearMax').value;
   const isAll=yr1===opts[0]&&yr2===opts[opts.length-1];
-  // sync era drawer buttons
   document.querySelectorAll('.era-btn').forEach(b=>{
     if(b.dataset.y1===''){b.classList.toggle('active',isAll);return;}
     const eMin=opts.find(y=>+y>=+b.dataset.y1)||opts[0];
     const eMax=[...opts].reverse().find(y=>+y<=+b.dataset.y2)||opts[opts.length-1];
     b.classList.toggle('active',yr1===eMin&&yr2===eMax);
   });
-  // sync eraQuick filterbar select
-  const eq=$('#eraQuick');
-  if(eq){
-    if(isAll){eq.value='';}
-    else{
-      let matched='';
-      [...eq.options].forEach(opt=>{
-        if(!opt.value)return;
-        const [ey1,ey2]=opt.value.split(':');
-        const eMin=opts.find(y=>+y>=+ey1)||opts[0];
-        const eMax=[...opts].reverse().find(y=>+y<=+ey2)||opts[opts.length-1];
-        if(yr1===eMin&&yr2===eMax)matched=opt.value;
-      });
-      eq.value=matched;
-    }
-  }
 }
 
 let deb;
 $('#search').addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(update,130);});
-['#catSel','#tagSel','#sortSel','#authorFilter','#bmOnly'].forEach(s=>$(s).addEventListener('change',update));
+['#catSel','#tagSel','#authorFilter','#bmOnly'].forEach(s=>$(s).addEventListener('change',update));
 $('#authorFilter').addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(update,200);});
 
 /* Quality pills */
@@ -1083,7 +1163,7 @@ document.querySelectorAll('.qp').forEach(b=>{
   b.addEventListener('click',()=>{$('#karmaFloor').value=b.dataset.k;syncPillStates();update();});
 });
 
-/* Era drawer buttons */
+/* Era buttons */
 document.querySelectorAll('.era-btn').forEach(b=>{
   b.addEventListener('click',()=>{
     const opts=[...$('#yearMin').options].map(o=>o.value);
@@ -1098,25 +1178,10 @@ document.querySelectorAll('.era-btn').forEach(b=>{
   });
 });
 
-/* Era quick select in filterbar */
-$('#eraQuick').addEventListener('change',()=>{
-  const val=$('#eraQuick').value;
-  const opts=[...$('#yearMin').options].map(o=>o.value);
-  if(!opts.length)return;
-  if(!val){$('#yearMin').value=opts[0];$('#yearMax').value=opts[opts.length-1];}
-  else{
-    const [y1,y2]=val.split(':');
-    $('#yearMin').value=opts.find(y=>+y>=+y1)||opts[0];
-    $('#yearMax').value=[...opts].reverse().find(y=>+y<=+y2)||opts[opts.length-1];
-  }
-  syncPillStates();update();
+/* Sort pills */
+document.querySelectorAll('.sp').forEach(b=>{
+  b.addEventListener('click',()=>{$('#sortSel').value=b.dataset.sort;syncPillStates();update();});
 });
-
-/* Drawer open / close */
-function closeDrawerFn(){$('#drawer').classList.remove('open');$('#drawerBackdrop').classList.remove('show');}
-$('#drawerBtn').onclick=()=>{$('#drawer').classList.add('open');$('#drawerBackdrop').classList.add('show');};
-$('#closeDrawer').onclick=closeDrawerFn;
-$('#drawerBackdrop').onclick=closeDrawerFn;
 
 $('#surpriseBtn').onclick=surprise;
 $('#authorsBtn').onclick=authorDeepDive;

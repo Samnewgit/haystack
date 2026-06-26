@@ -240,6 +240,13 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 .qf-div{width:1px;height:18px;background:var(--line);margin:0 2px;flex-shrink:0;align-self:center}
 .clear-btn{margin-left:auto;background:transparent;border:none;font-size:11px;color:var(--ink-faint);text-decoration:underline;cursor:pointer;padding:0}
 .clear-btn:hover{color:var(--pine)}
+/* Collections */
+.coll-btn{width:100%;text-align:left;background:var(--raised-2);border:1px solid var(--line);border-radius:7px;padding:8px 11px;margin-bottom:5px;font-size:12.5px;color:var(--ink);transition:.12s;cursor:pointer;line-height:1.3}
+.coll-btn:hover{border-color:var(--pine);color:var(--pine)}
+.coll-btn.active{border-color:var(--pine);background:var(--pine-tint);color:var(--pine-deep);font-weight:600}
+.coll-btn small{display:block;font-size:10.5px;color:var(--ink-faint);font-weight:400;margin-top:2px}
+.coll-btn.active small{color:var(--pine-deep);opacity:.8}
+.coll-badge{display:inline-block;background:var(--pine);color:#fff;font-size:10px;font-family:var(--mono);padding:1px 7px;border-radius:10px;margin-left:7px;vertical-align:middle}
 .active-note{font-family:var(--mono);font-size:11px;color:var(--pine);white-space:nowrap}
 
 /* ---------- Footer ---------- */
@@ -339,6 +346,11 @@ input[type=range]{width:100%;accent-color:var(--pine)}
       <div class="grp">
         <h3>Tag</h3>
         <select id="tagSel"><option value="">any tag</option></select>
+      </div>
+
+      <div class="grp">
+        <h3>Collections</h3>
+        <div id="collList"></div>
       </div>
 
       <div class="grp">
@@ -517,6 +529,67 @@ function clearAllFilters(){
   $('#catSel').value=''; $('#authorFilter').value=''; $('#tagSel').value='';
   $('#sortSel').value='relevance'; $('#bmOnly').checked=false;
   syncPillStates();update();
+}
+
+/* ── Curated collections (post IDs sourced from full archive analysis) ── */
+const CURATED=[
+  {label:'Founding Texts',
+   desc:'Essays that defined rationalist thought',
+   ids:['uMQ3cqWDPHhjtiesc','CoZhXrhpQxpy9xw9y','gFMH3Cqw4XxwL69iy','Kbm6QnJv9dgWsPHQP',
+        'PBRWb2Em5SNeWYwwB','895quRDaK6gR2rM82','aHaqgTNnFzD7NGLMx','baTWMegR42PAsH9qJ',
+        'yCWPkLi8wJvewPbEp','TxcRbCYHaeL59aY7E','9kcTNWopvXFncXgPy','reitXJgJXFzKpdKyd',
+        'neQ7eXuaXpiYw7SBy','7FzD7pNm9X68Gp5ZC','3p3CYauiX8oLjmwRF','6NvbSwuSAooQxxf7f']},
+  {label:'Best-of-Everything',
+   desc:'"Best X on every subject" megaposts by lukeprog & others',
+   ids:['xg3hXCYQPJkwHyik2','SXJGSPeQWbACveJhs','HLJMyd4ncE3kvjwhe','zHS4FJhByRjqsuH4o',
+        'Ek72rktvMrz69HBTL','hswzBzHSMGxz8rcXg','dDGLbAzEiAJSodsnH','hfcbqP7RQLii8GBdg']},
+  {label:'Life Wisdom',
+   desc:'Practical rationality applied to everyday life',
+   ids:['7hFeMWC6Y5eaSixbD','sbcmACvB6DqYXYidL','bx3gkHJehRCYZAF3r','vzfz4AS6wbooaTeQk',
+        '9o3QBg2xJXcRCxGjS','RWo4LwFzpHNQCTcYt','ZbgCx2ntD5eu8Cno9','ttGbpJQ8shBi8hDhh',
+        'PhXENjdXiHhsWGfQo','Psr9tnQFuEXiuqGcR','33KewgYhNSxFpbpXg','hN2aRnu798yas5b2k',
+        '9kNxhKWvixtKW5anS','EFQ3F6kmt4WHXRqik','XvN2QQpKTuEzgkZHY']},
+  {label:'Hidden Classics',
+   desc:'High-karma pre-2015 posts few readers have found',
+   ids:['rEBXN3x6kXgD4pLxs','4DBBQkEQvNEWafkek','ur9TCRnHJighHmLCW','puhPJimawPuNZ5wAR',
+        'tAXrD8Y6hcJ8dt6Nt','fNJvYD6XqnX82i4jA','JcpzFpPBSmzuksmWM','BHYBdijDcAKQ6e45Z',
+        'AqbWna2S85pFTsHH4','ma7FSEtumkve8czGF','HJeD6XbMGEfcrx3mD','HBxe6wdjxK239zajf']},
+  {label:'AI Safety Origins',
+   desc:'Ideas born on LessWrong that reshaped AI safety thinking',
+   ids:['uMQ3cqWDPHhjtiesc','CoZhXrhpQxpy9xw9y','vJFdjigzmcXMhNTsx','HBxe6wdjxK239zajf',
+        'D7PumeYTDPfBTp3i7','aPeJE8bSo6rAFoLqg','iCfdcxiyr2Kj8m8mT','j9Q8bRmwCgXRYAgcJ',
+        'niQ3heWwF6SydhS7R','6Xgy6CAf2jqHhynHL','Aq5X9tapacnk2QGY4']},
+  {label:'Original Fiction',
+   desc:'Stories and fables unique to the rationalist tradition',
+   ids:['CHD5m9fnosr7L3dto','AYbhqi65SWzHzy7Xx','umJMCaxosXWEDfS66','QLmSFeFexgTLsNeeA',
+        'fFY2HeC9i2Tx8FEnK']},
+  {label:'Forecasting & Futures',
+   desc:'AI timelines, COVID bets, and real-world predictions',
+   ids:['6Xgy6CAf2jqHhynHL','niQ3heWwF6SydhS7R','fFY2HeC9i2Tx8FEnK','ma7FSEtumkve8czGF',
+        'sbcmACvB6DqYXYidL','HBxe6wdjxK239zajf']},
+  {label:'Unique LW Voices',
+   desc:'Signature essays from LW\'s most distinctive writers',
+   ids:['yLLkWMDbC9ZNKbjDG','z8usYeKX7dtTWsEnk','YRgMCXMbkKBZgMz4M','RgJicDmXHDxcJ9Fsw',
+        'vzfz4AS6wbooaTeQk','bx3gkHJehRCYZAF3r','XvN2QQpKTuEzgkZHY','Psr9tnQFuEXiuqGcR',
+        'ma7FSEtumkve8czGF','9kNxhKWvixtKW5anS']}
+];
+let CURATED_IDS=null, CURATED_LABEL='';
+
+function buildCurated(){
+  const list=$('#collList');
+  CURATED.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='coll-btn'; b.dataset.label=c.label;
+    b.innerHTML=`${c.label} <small>${c.desc}</small>`;
+    b.onclick=()=>{
+      const active=b.classList.contains('active');
+      document.querySelectorAll('.coll-btn').forEach(x=>x.classList.remove('active'));
+      if(active){CURATED_IDS=null;CURATED_LABEL='';}
+      else{CURATED_IDS=new Set(c.ids);CURATED_LABEL=c.label;b.classList.add('active');}
+      update();
+    };
+    list.appendChild(b);
+  });
 }
 
 /* ── Quick filter presets ── */
@@ -822,6 +895,7 @@ function ingest(text){
   }
   buildControls();
   buildQuickFilters();
+  buildCurated();
   $('#app').style.display='grid';
   deserializeState();   // URL hash takes priority over localStorage
   restoreSettings();    // fills in any remaining slots localStorage remembers
@@ -916,6 +990,7 @@ function update(){
 
   let out=[];
   for(const o of ROWS){
+    if(CURATED_IDS && !CURATED_IDS.has(o.ID)) continue;
     if(o.Karma<kFloor) continue;
     if(o.Year<yMin||o.Year>yMax) continue;
     if(cat && o._cat!==cat) continue;
@@ -941,9 +1016,10 @@ function update(){
   VIEW=out;
   RENDER_LIMIT=100;
   renderResults();
+  const collTag=CURATED_LABEL?` · ${CURATED_LABEL}`:'';
   $('#resultCount').textContent=out.length===ROWS.length
-    ?`${out.length.toLocaleString()} posts`
-    :`${out.length.toLocaleString()} of ${ROWS.length.toLocaleString()} posts`;
+    ?`${out.length.toLocaleString()} posts${collTag}`
+    :`${out.length.toLocaleString()} of ${ROWS.length.toLocaleString()} posts${collTag}`;
   $('#fuzzyNote').textContent=lastFuzzy?'≈ fuzzy matches included (typo-tolerant)':'';
   $('#bmCount').textContent=BOOKMARKS.size;
   serializeState();

@@ -49,6 +49,10 @@ input,select{font-family:inherit}
 [data-theme="dark"] .cooc .crow:hover{background:var(--raised);}
 [data-theme="dark"] .arow-hdr{background:var(--raised-2)!important;}
 
+/* ---------- Theme transition (circular reveal) ---------- */
+::view-transition-old(root),
+::view-transition-new(root){animation:none;mix-blend-mode:normal;}
+
 /* ---------- Loading / error screen ---------- */
 #loadScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--paper);z-index:50;flex-direction:column;gap:0}
 .load-card{max-width:380px;width:100%;text-align:center;padding:40px 32px}
@@ -398,11 +402,25 @@ let lastFuzzy=false;
   const sys=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
   document.documentElement.dataset.theme=saved||sys;
 })();
-function toggleTheme(){
-  const next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+function applyTheme(next){
   document.documentElement.dataset.theme=next;
   localStorage.setItem('lw_theme',next);
   $('#themeBtn').textContent=next==='dark'?'☀️':'🌙';
+}
+function toggleTheme(){
+  const next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+  const btn=$('#themeBtn');
+  const r=btn.getBoundingClientRect();
+  const x=r.left+r.width/2, y=r.top+r.height/2;
+  const maxR=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y));
+  if(!document.startViewTransition){applyTheme(next);return;}
+  const vt=document.startViewTransition(()=>applyTheme(next));
+  vt.ready.then(()=>{
+    document.documentElement.animate(
+      {clipPath:[`circle(0px at ${x}px ${y}px)`,`circle(${maxR}px at ${x}px ${y}px)`]},
+      {duration:450,easing:'ease-out',pseudoElement:'::view-transition-new(root)'}
+    );
+  });
 }
 
 /* ── URL state — encode all filters in the hash so views are shareable ── */

@@ -22,6 +22,12 @@
   --serif:'Spectral',Georgia,serif;
   --sans:'IBM Plex Sans',system-ui,sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,monospace;
+  /* karma heat scale — orange tier (light mode) */
+  --k0-bg:#EEEEEE; --k0-fg:#888888;
+  --k1-bg:#FEF3E2; --k1-fg:#7A4A00;
+  --k2-bg:#FFB347; --k2-fg:#3D1C00;
+  --k3-bg:#A84E00; --k3-fg:#FFFFFF;
+  --k4-bg:#6B2C00; --k4-fg:#FFFFFF;
 }
 *{box-sizing:border-box}
 html{height:100%;background:#D8D8D8}
@@ -39,10 +45,15 @@ input,select{font-family:inherit}
   --line:#2A2A2A; --line-soft:#222222;
   --pine:#FF2222; --pine-deep:#CC0000; --pine-tint:#2A0000;
   --focus:#FF2222;
+  /* karma heat scale — orange tier (dark mode) */
+  --k0-bg:#252525; --k0-fg:#888888;
+  --k1-bg:#2E1800; --k1-fg:#FFB870;
+  --k2-bg:#4A2800; --k2-fg:#FFD090;
+  --k3-bg:#943D00; --k3-fg:#FFFFFF;
+  --k4-bg:#6B2C00; --k4-fg:#FFD0A0;
 }
 [data-theme="dark"] .overlay{background:rgba(0,0,0,.75);}
 [data-theme="dark"] .chip,[data-theme="dark"] .cat-tag{color:var(--pine);}
-[data-theme="dark"] .karma small{color:rgba(255,255,255,.55);}
 [data-theme="dark"] .searchbox input::placeholder{color:var(--ink-faint);}
 [data-theme="dark"] select option{background:var(--raised-2);color:var(--ink);}
 [data-theme="dark"] .aulist .arow:hover{background:var(--raised);}
@@ -132,7 +143,7 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 .card{display:grid;grid-template-columns:54px 1fr auto;gap:14px;align-items:start;padding:13px 14px;border:1px solid transparent;border-bottom:1px solid var(--line-soft);border-radius:8px}
 .card:hover{background:var(--raised-2);border-color:var(--line)}
 .karma{font-family:var(--mono);font-weight:500;font-size:13px;text-align:center;padding:4px 0;border-radius:6px;line-height:1.1}
-.karma small{display:block;font-size:9px;color:var(--ink-faint);font-weight:400;margin-top:1px}
+.karma small{display:block;font-size:9px;font-weight:400;margin-top:1px;opacity:0.7}
 .card .body .title{font-family:var(--serif);font-size:16.5px;font-weight:500;color:var(--ink);text-decoration:none;line-height:1.3}
 .card .body .title:hover{color:var(--pine);text-decoration:underline}
 .card .body .title mark{background:var(--pine-tint);color:inherit;padding:0 1px;border-radius:2px}
@@ -924,12 +935,8 @@ function update(){
 
 /* ---------- Render: results ---------- */
 function karmaStyle(k){
-  let bg='#F0F0F0',fg='#999999';
-  if(k>=400){bg='#7A0000';fg='#ffffff';}
-  else if(k>=150){bg='#CC0000';fg='#ffffff';}
-  else if(k>=50){bg='#FF7777';fg='#5A0000';}
-  else if(k>=10){bg='#FFD5D5';fg='#880000';}
-  return `background:${bg};color:${fg}`;
+  const t=k>=400?4:k>=150?3:k>=50?2:k>=10?1:0;
+  return `background:var(--k${t}-bg);color:var(--k${t}-fg)`;
 }
 function hl(title,tok){
   if(!tok || (!tok.words.length&&!tok.phrases.length)) return esc(title);

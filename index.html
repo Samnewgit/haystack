@@ -418,7 +418,7 @@ function toggleTheme(){
   vt.ready.then(()=>{
     document.documentElement.animate(
       {clipPath:[`circle(0px at ${x}px ${y}px)`,`circle(${maxR}px at ${x}px ${y}px)`]},
-      {duration:1100,easing:'ease-out',pseudoElement:'::view-transition-new(root)'}
+      {duration:900,easing:'ease-out',pseudoElement:'::view-transition-new(root)'}
     );
   });
 }
@@ -548,9 +548,9 @@ async function autoLoad(){
       const{done,value}=await reader.read();
       if(done) break;
       chunks.push(value); loaded+=value.length;
-      if(total){fill.style.width=(loaded/total*90)+'%';}
-      else fill.style.width=Math.min(85,loaded/50000)+'%';
-      note.textContent='Loading… '+(total?Math.round(loaded/total*100)+'%':Math.round(loaded/1024)+' KB');
+      const pct=total?Math.round(loaded/total*90):Math.min(85,Math.round(loaded/50000));
+      fill.style.width=pct+'%';
+      note.textContent=total?'Loading… '+pct+'%':'Loading… '+Math.round(loaded/1024)+' KB';
     }
     fill.style.width='95%';
     note.textContent='Parsing…';

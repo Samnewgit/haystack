@@ -418,7 +418,7 @@ function toggleTheme(){
   vt.ready.then(()=>{
     document.documentElement.animate(
       {clipPath:[`circle(0px at ${x}px ${y}px)`,`circle(${maxR}px at ${x}px ${y}px)`]},
-      {duration:450,easing:'ease-out',pseudoElement:'::view-transition-new(root)'}
+      {duration:900,easing:'ease-out',pseudoElement:'::view-transition-new(root)'}
     );
   });
 }

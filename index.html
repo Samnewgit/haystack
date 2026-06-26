@@ -66,8 +66,6 @@ input,select{font-family:inherit}
 header.topbar{display:flex;align-items:center;gap:18px;padding:11px 18px;background:var(--raised);border-bottom:1px solid var(--line)}
 .topbar .mark{font-family:var(--serif);font-weight:600;font-size:20px;letter-spacing:-.01em}
 .topbar .mark em{font-style:italic;color:var(--pine)}
-.haystack-readout{font-family:var(--mono);font-size:12px;color:var(--ink-soft);white-space:nowrap}
-.haystack-readout b{color:var(--ink);font-weight:500}
 .topbar .spacer{flex:1}
 .ghost-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:6px 12px;border-radius:6px;font-size:12.5px;transition:.15s}
 .ghost-btn:hover{border-color:var(--pine);color:var(--pine)}
@@ -180,7 +178,6 @@ input[type=range]{width:100%;accent-color:var(--pine)}
   .ghost-btn.desktop-only{display:none}
   .share-btn.desktop-only{display:none}
   .theme-btn{padding:5px 8px}
-  .haystack-readout{display:none}
   .qfilters{overflow-x:auto;flex-wrap:nowrap;padding:6px 14px}
   .qf-lbl{display:none}
   .clear-btn{display:none}
@@ -247,7 +244,6 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 <div id="app">
   <header class="topbar">
     <div class="mark">Hay<em>stack</em></div>
-    <div class="haystack-readout" id="readout"></div>
     <div class="spacer"></div>
     <button class="share-btn desktop-only" id="shareBtn" title="Copy link to this view">🔗 Share view</button>
     <button class="ghost-btn desktop-only" id="authorsBtn">Authors</button>
@@ -354,13 +350,13 @@ input[type=range]{width:100%;accent-color:var(--pine)}
           <input id="search" placeholder='Search titles, authors, tags — "quote" for exact phrase' autocomplete="off">
         </div>
         <div class="searchmeta">
-          <span class="count"><b id="resultCount">0</b> posts in view</span>
+          <span class="count" id="resultCount"></span>
           <span class="fuzzynote" id="fuzzyNote"></span>
         </div>
       </div>
       <div class="results" id="results"></div>
       <footer class="site-footer">
-        Data from <a href="https://www.lesswrong.com" target="_blank" rel="noopener">LessWrong</a> · <span id="dataDate"></span> · Bookmarks save to this browser only · Built with Haystack
+        Data from <a href="https://www.lesswrong.com" target="_blank" rel="noopener">LessWrong</a> · <span id="dataDate"></span> · Bookmarks saved to this browser only
       </footer>
     </main>
   </div>
@@ -898,8 +894,9 @@ function update(){
   VIEW=out;
   RENDER_LIMIT=100;
   renderResults();
-  $('#resultCount').textContent=out.length.toLocaleString();
-  $('#readout').innerHTML=`<b>${out.length.toLocaleString()}</b> in view · <b>${ROWS.length.toLocaleString()}</b> total · needle-to-haystack <b>${(100*out.length/ROWS.length).toFixed(1)}%</b>`;
+  $('#resultCount').textContent=out.length===ROWS.length
+    ?`${out.length.toLocaleString()} posts`
+    :`${out.length.toLocaleString()} of ${ROWS.length.toLocaleString()} posts`;
   $('#fuzzyNote').textContent=lastFuzzy?'≈ fuzzy matches included (typo-tolerant)':'';
   $('#bmCount').textContent=BOOKMARKS.size;
   serializeState();

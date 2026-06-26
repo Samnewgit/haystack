@@ -90,7 +90,7 @@ input,select{font-family:inherit}
 .load-err code{font-family:var(--mono);background:var(--raised);padding:2px 6px;border-radius:3px;font-size:12px}
 
 /* ---------- App shell ---------- */
-#app{display:none;grid-template-rows:auto 1fr;height:100vh;overflow:hidden}
+#app{display:none;flex-direction:column;height:100vh;overflow:hidden}
 header.topbar{display:flex;align-items:center;gap:18px;padding:11px 18px;background:var(--raised);border-bottom:1px solid var(--line)}
 .topbar .mark{font-family:var(--serif);font-weight:600;font-size:20px;letter-spacing:-.01em}
 .topbar .mark em{font-style:italic;color:var(--pine)}
@@ -99,7 +99,7 @@ header.topbar{display:flex;align-items:center;gap:18px;padding:11px 18px;backgro
 .ghost-btn:hover{border-color:var(--pine);color:var(--pine)}
 
 /* body split */
-.split{display:grid;grid-template-columns:1fr 286px;overflow:hidden}
+.split{display:grid;grid-template-columns:1fr 286px;overflow:hidden;flex:1;min-height:0}
 aside.controls{order:2;border-left:1px solid var(--line);overflow-y:auto;padding:14px 16px 60px;background:var(--raised-2)}
 main.results-pane{order:1;overflow-y:auto;padding:0 0 80px}
 
@@ -249,6 +249,41 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 .coll-badge{display:inline-block;background:var(--pine);color:#fff;font-size:10px;font-family:var(--mono);padding:1px 7px;border-radius:10px;margin-left:7px;vertical-align:middle}
 .active-note{font-family:var(--mono);font-size:11px;color:var(--pine);white-space:nowrap}
 
+/* ---------- Nav tabs (topbar) ---------- */
+.nav-tab{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--ink-soft);padding:5px 11px;font-size:13px;font-weight:500;cursor:pointer;transition:.15s;border-radius:5px 5px 0 0;margin-bottom:-1px}
+.nav-tab:hover{color:var(--ink);background:var(--raised-2)}
+.nav-tab.active{color:var(--pine);border-bottom-color:var(--pine);font-weight:600}
+
+/* ---------- Collections page ---------- */
+#collPage{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+#collPage.show{display:flex}
+.coll-page-header{padding:18px 24px 14px;border-bottom:1px solid var(--line);flex-shrink:0}
+.coll-page-header h2{font-family:var(--serif);font-size:22px;font-weight:600;margin:0 0 4px}
+.coll-page-header p{font-size:12.5px;color:var(--ink-soft);margin:0}
+/* Grid of collection cards */
+#collGrid{overflow-y:auto;padding:20px 24px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;align-content:start}
+.coll-card{background:var(--raised-2);border:1.5px solid var(--line);border-radius:10px;padding:15px 15px 13px;cursor:pointer;transition:.15s;position:relative;text-align:left}
+.coll-card:hover{border-color:var(--pine);background:var(--pine-tint);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.07)}
+.coll-card-label{font-family:var(--serif);font-size:15.5px;font-weight:600;color:var(--ink);margin-bottom:5px;padding-right:46px;line-height:1.3}
+.coll-card:hover .coll-card-label{color:var(--pine-deep)}
+.coll-card-desc{font-size:11.5px;color:var(--ink-soft);line-height:1.45}
+.coll-card-count{position:absolute;top:13px;right:13px;background:var(--pine);color:#fff;font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
+/* Detail view */
+#collDetail{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+#collDetail.show{display:flex}
+.coll-detail-head{padding:12px 20px;border-bottom:1px solid var(--line);flex-shrink:0;display:flex;align-items:center;gap:14px;background:var(--raised-2)}
+.coll-back{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:5px 12px;border-radius:6px;font-size:12.5px;cursor:pointer;transition:.15s;white-space:nowrap}
+.coll-back:hover{border-color:var(--pine);color:var(--pine)}
+.coll-detail-info{flex:1;min-width:0}
+.coll-detail-title{font-family:var(--serif);font-size:18px;font-weight:600;margin:0 0 2px;line-height:1.2}
+.coll-detail-sub{font-size:11.5px;color:var(--ink-faint);font-family:var(--mono)}
+.coll-detail-list{overflow-y:auto;padding:6px 20px 80px}
+.cp{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:start;padding:11px 10px;border-bottom:1px solid var(--line-soft);border-radius:7px;transition:.1s}
+.cp:hover{background:var(--raised-2)}
+.cp-title{font-family:var(--serif);font-size:15.5px;font-weight:500;color:var(--ink);text-decoration:none;line-height:1.3;display:block}
+.cp-title:hover{color:var(--pine);text-decoration:underline}
+.cp-meta{font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin-top:3px}
+
 /* ---------- Footer ---------- */
 .site-footer{padding:20px 22px;font-size:12px;color:var(--ink-faint);border-top:1px solid var(--line-soft);font-family:var(--mono)}
 .site-footer a{color:var(--ink-faint);text-decoration:underline}
@@ -280,6 +315,8 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 <div id="app">
   <header class="topbar">
     <div class="mark">Hay<em>stack</em></div>
+    <button class="nav-tab active" id="tabSearch">Search</button>
+    <button class="nav-tab" id="tabCollections">Collections</button>
     <div class="spacer"></div>
     <button class="share-btn desktop-only" id="shareBtn" title="Copy link to this view">🔗 Share view</button>
     <button class="ghost-btn desktop-only" id="authorsBtn">Authors</button>
@@ -349,11 +386,6 @@ input[type=range]{width:100%;accent-color:var(--pine)}
       </div>
 
       <div class="grp">
-        <h3>Topic Collections</h3>
-        <div id="collList"></div>
-      </div>
-
-      <div class="grp">
         <h3>Sort</h3>
         <div class="sort-list">
           <button class="sp active" data-sort="relevance">Best match</button>
@@ -397,6 +429,16 @@ input[type=range]{width:100%;accent-color:var(--pine)}
       </footer>
     </main>
   </div>
+
+  <!-- ============ COLLECTIONS PAGE ============ -->
+  <div id="collPage">
+    <div id="collGrid"></div>
+    <div id="collDetail">
+      <div class="coll-detail-head" id="collDetailHead"></div>
+      <div class="coll-detail-list" id="collDetailList"></div>
+    </div>
+  </div>
+
 </div>
 
 <!-- OVERLAY -->
@@ -557,25 +599,58 @@ const CURATED=[
 ];
 let CURATED_IDS=null, CURATED_LABEL='';
 
-function buildCurated(){
-  const list=$('#collList');
+/* ── Tab switching ── */
+let ACTIVE_TAB='search';
+function switchTab(t){
+  ACTIVE_TAB=t;
+  const isSearch=(t==='search');
+  const split=$('.split'), qf=$('#qfilters'), cp=$('#collPage');
+  split.style.display=isSearch?'':'none';
+  qf.style.display=isSearch?'':'none';
+  cp.classList.toggle('show',!isSearch);
+  $('#tabSearch').classList.toggle('active',isSearch);
+  $('#tabCollections').classList.toggle('active',!isSearch);
+  if(!isSearch) closeCollDetail();
+}
+
+/* ── Collections page ── */
+function buildCollPage(){
+  const grid=$('#collGrid');
   CURATED.forEach(c=>{
-    const b=document.createElement('button');
-    b.className='coll-btn'; b.dataset.label=c.label;
-    // desc contains "(N posts)" at end — split it for badge display
-    const descMatch=c.desc.match(/^(.*?)\s*\((\d+) posts\)$/);
-    const descText=descMatch?descMatch[1]:c.desc;
-    const cnt=descMatch?descMatch[2]:c.ids.length;
-    b.innerHTML=`${c.label} <span class="coll-badge">${cnt}</span><small>${descText}</small>`;
-    b.onclick=()=>{
-      const active=b.classList.contains('active');
-      document.querySelectorAll('.coll-btn').forEach(x=>x.classList.remove('active'));
-      if(active){CURATED_IDS=null;CURATED_LABEL='';}
-      else{CURATED_IDS=new Set(c.ids);CURATED_LABEL=c.label;b.classList.add('active');}
-      update();
-    };
-    list.appendChild(b);
+    const m=c.desc.match(/^(.*?)\s*\((\d+) posts\)$/);
+    const descText=m?m[1]:c.desc;
+    const cnt=m?m[2]:c.ids.length;
+    const card=document.createElement('div');
+    card.className='coll-card';
+    card.innerHTML=`<span class="coll-card-count">${cnt}</span><div class="coll-card-label">${c.label}</div><div class="coll-card-desc">${descText}</div>`;
+    card.onclick=()=>openCollDetail(c);
+    grid.appendChild(card);
   });
+}
+
+function openCollDetail(c){
+  const ids=new Set(c.ids);
+  const posts=ROWS.filter(r=>ids.has(r.ID)).sort((a,b)=>b.Karma-a.Karma);
+  const m=c.desc.match(/^(.*?)\s*\((\d+) posts\)$/);
+  const descText=m?m[1]:c.desc;
+  const head=$('#collDetailHead');
+  head.innerHTML=`<button class="coll-back" onclick="closeCollDetail()">← All topics</button><div class="coll-detail-info"><div class="coll-detail-title">${c.label}</div><div class="coll-detail-sub">${posts.length} posts · ${descText}</div></div>`;
+  const list=$('#collDetailList');
+  list.innerHTML='';
+  posts.forEach(p=>{
+    const row=document.createElement('div');
+    row.className='cp';
+    row.innerHTML=`<div class="karma" style="${karmaStyle(p.Karma)}">${p.Karma}<small>karma</small></div><div><a class="cp-title" href="https://www.lesswrong.com/posts/${p.ID}" target="_blank" rel="noopener">${p.Title}</a><div class="cp-meta">${p.Author||'—'} · ${p.Year||'—'}${p.Tags?' · '+p.Tags.split(',')[0]:''}</div></div>`;
+    list.appendChild(row);
+  });
+  $('#collGrid').style.display='none';
+  $('#collDetail').classList.add('show');
+  list.scrollTop=0;
+}
+
+function closeCollDetail(){
+  $('#collDetail').classList.remove('show');
+  $('#collGrid').style.display='';
 }
 
 /* ── Quick filter presets ── */
@@ -882,7 +957,7 @@ function ingest(text){
   buildControls();
   buildQuickFilters();
   buildCurated();
-  $('#app').style.display='grid';
+  $('#app').style.display='flex';
   deserializeState();   // URL hash takes priority over localStorage
   restoreSettings();    // fills in any remaining slots localStorage remembers
   syncPillStates();
@@ -1199,6 +1274,10 @@ function restoreSettings(){
 }
 
 /* ---------- Wire up events ---------- */
+// Nav tabs
+$('#tabSearch').onclick=()=>switchTab('search');
+$('#tabCollections').onclick=()=>switchTab('collections');
+
 // Dark mode
 $('#themeBtn').onclick=toggleTheme;
 $('#themeBtn').textContent=document.documentElement.dataset.theme==='dark'?'☀️':'🌙';

@@ -84,7 +84,7 @@ input,select{font-family:inherit}
 .load-card .mark em{font-style:italic;color:var(--pine)}
 .load-card p{color:var(--ink-soft);margin:0 0 20px;font-size:14px}
 .load-bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-bottom:14px}
-.load-fill{height:100%;background:var(--pine);width:0%;transition:width .3s;border-radius:2px}
+.load-fill{height:100%;background:var(--pine);width:0%;border-radius:2px}
 .load-note{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
 .load-err{color:#c04040;margin-top:16px;font-size:13px}
 .load-err code{font-family:var(--mono);background:var(--raised);padding:2px 6px;border-radius:3px;font-size:12px}
@@ -237,6 +237,7 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 .qf-lbl{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;margin-right:4px;white-space:nowrap}
 .qchip{background:var(--raised-2);border:1px solid var(--line);color:var(--ink-soft);padding:4px 10px;border-radius:20px;font-size:11.5px;transition:.12s;white-space:nowrap}
 .qchip:hover{border-color:var(--pine);color:var(--pine);background:var(--pine-tint)}
+.qf-div{width:1px;height:18px;background:var(--line);margin:0 2px;flex-shrink:0;align-self:center}
 .clear-btn{margin-left:auto;background:transparent;border:none;font-size:11px;color:var(--ink-faint);text-decoration:underline;cursor:pointer;padding:0}
 .clear-btn:hover{color:var(--pine)}
 .active-note{font-family:var(--mono);font-size:11px;color:var(--pine);white-space:nowrap}
@@ -365,10 +366,6 @@ input[type=range]{width:100%;accent-color:var(--pine)}
         <label class="chk"><input type="checkbox" id="bmOnly"> Bookmarked only (<span id="bmCount">0</span>) <span style="font-size:10px;color:var(--ink-faint)">· this device</span></label>
       </div>
 
-      <div class="grp">
-        <h3>Starter reads</h3>
-        <div class="chips" id="starterChips"></div>
-      </div>
     </aside>
 
     <main class="results-pane">
@@ -534,10 +531,9 @@ const QUICK_FILTERS=[
   {label:'Philosophy',  set:{cat:'Ethics & Moral Philosophy'}},
   {label:'EA',          set:{cat:'Effective Altruism'}},
 ];
+const STARTER_TAGS=["agency","identity","habit","emotion","motivation","self-deception","willpower","regret","attention","virtue","status","death","meaning","trust","fear","procrastination"];
 function buildQuickFilters(){
   const row=$('#qfilters');
-  const lbl=row.querySelector('.qf-lbl');
-  const note=$('#activeNote');
   QUICK_FILTERS.forEach(qf=>{
     const b=document.createElement('button');
     b.className='qchip'; b.textContent=qf.label;
@@ -549,6 +545,14 @@ function buildQuickFilters(){
       if(qf.set.sort!==undefined)$('#sortSel').value=qf.set.sort;
       syncPillStates();update();
     };
+    row.appendChild(b);
+  });
+  const div=document.createElement('span');
+  div.className='qf-div'; row.appendChild(div);
+  STARTER_TAGS.forEach(w=>{
+    const b=document.createElement('button');
+    b.className='chip'; b.textContent=w;
+    b.onclick=()=>{$('#search').value=w;update();};
     row.appendChild(b);
   });
   const clr=document.createElement('button');
@@ -565,18 +569,23 @@ async function autoLoad(){
     const res=await fetch(DATA_URL);
     if(!res.ok) throw new Error('Server returned '+res.status+' for '+DATA_URL);
     const total=+res.headers.get('content-length')||0;
-    let loaded=0;
+    let loaded=0, lastPaint=0;
     const reader=res.body.getReader();
     const chunks=[];
     while(true){
       const{done,value}=await reader.read();
       if(done) break;
       chunks.push(value); loaded+=value.length;
-      const pct=total?Math.round(loaded/total*90):Math.min(85,Math.round(loaded/50000));
-      fill.style.width=pct+'%';
-      note.textContent=total?'Loading… '+pct+'%':'Loading… '+Math.round(loaded/1024)+' KB';
+      const now=Date.now();
+      if(now-lastPaint>80){
+        lastPaint=now;
+        const pct=total?Math.round(loaded/total*90):Math.min(85,Math.round(loaded/50000));
+        fill.style.width=pct+'%';
+        note.textContent=total?'Loading… '+pct+'%':'Loading… '+Math.round(loaded/1024)+' KB';
+      }
     }
-    fill.style.width='95%';
+    const pctFinal=total?90:85;
+    fill.style.width=pctFinal+'%';
     note.textContent='Parsing…';
     const bytes=new Uint8Array(loaded);
     let offset=0; for(const c of chunks){bytes.set(c,offset);offset+=c.length;}
@@ -842,10 +851,6 @@ function buildControls(){
   Object.entries(af).sort((a,b)=>b[1]-a[1]).slice(0,300).forEach(([a])=>{
     const opt=document.createElement('option'); opt.value=a; al.appendChild(opt);
   });
-  // starter chips
-  const starters=["agency","identity","habit","emotion","motivation","self-deception","willpower","regret","attention","virtue","status","death","meaning","trust","fear","procrastination"];
-  const sc=$('#starterChips'); sc.innerHTML='';
-  starters.forEach(w=>{const b=document.createElement('button');b.className='chip';b.textContent=w;b.onclick=()=>{$('#search').value=w;update();};sc.appendChild(b);});
   $('#bmCount').textContent=BOOKMARKS.size;
 }
 

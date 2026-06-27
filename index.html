@@ -240,6 +240,11 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 .qf-div{width:1px;height:18px;background:var(--line);margin:0 2px;flex-shrink:0;align-self:center}
 .clear-btn{margin-left:auto;background:transparent;border:none;font-size:11px;color:var(--ink-faint);text-decoration:underline;cursor:pointer;padding:0}
 .clear-btn:hover{color:var(--pine)}
+/* Active filter pills */
+.atag{display:inline-flex;align-items:center;gap:4px;background:var(--pine);color:#fff;border-radius:20px;padding:3px 5px 3px 9px;font-size:11.5px;white-space:nowrap;line-height:1}
+.atag-x{background:transparent;border:none;color:rgba(255,255,255,.75);font-size:14px;line-height:1;cursor:pointer;padding:0 3px;border-radius:10px;transition:.1s}
+.atag-x:hover{color:#fff;background:rgba(0,0,0,.2)}
+.chip.chip-on{background:var(--pine);color:#fff}
 /* Collections */
 .coll-btn{width:100%;text-align:left;background:var(--raised-2);border:1px solid var(--line);border-radius:7px;padding:8px 11px;margin-bottom:5px;font-size:12.5px;color:var(--ink);transition:.12s;cursor:pointer;line-height:1.3}
 .coll-btn:hover{border-color:var(--pine);color:var(--pine)}
@@ -325,8 +330,8 @@ input[type=range]{width:100%;accent-color:var(--pine)}
   </header>
 
   <div class="qfilters" id="qfilters">
+    <div id="atags" style="display:contents"></div>
     <span class="qf-lbl">Quick:</span>
-    <span class="active-note" id="activeNote" style="display:none"></span>
   </div>
 
   <div class="sidebar-backdrop" id="backdrop"></div>
@@ -512,6 +517,7 @@ function serializeState(){
   const tag=$('#tagSel').value; if(tag) p.set('tag',tag);
   const sort=$('#sortSel').value; if(sort&&sort!=='relevance') p.set('sort',sort);
   if($('#bmOnly').checked) p.set('bm','1');
+  if(ACTIVE_TAGS.size) p.set('tags',[...ACTIVE_TAGS].join(','));
   const s=p.toString();
   history.replaceState(null,'',s?'#'+s:location.pathname+location.search);
 }
@@ -519,6 +525,7 @@ function deserializeState(){
   if(!location.hash||location.hash==='#') return;
   const p=new URLSearchParams(location.hash.slice(1));
   if(p.has('q')){$('#search').value=p.get('q');}
+  if(p.has('tags')){p.get('tags').split(',').forEach(t=>{if(t)ACTIVE_TAGS.add(t);});}
   if(p.has('k'))$('#karmaFloor').value=p.get('k');
   if(p.has('y1'))$('#yearMin').value=p.get('y1');
   if(p.has('y2'))$('#yearMax').value=p.get('y2');
@@ -544,6 +551,7 @@ function shareView(){
 function activeFilters(){
   let n=0;
   if($('#search').value.trim()) n++;
+  n+=ACTIVE_TAGS.size;
   if(+$('#karmaFloor').value>0) n++;
   const opts=[...$('#yearMin').options].map(o=>o.value);
   if(opts.length&&($('#yearMin').value!==opts[0]||$('#yearMax').value!==opts[opts.length-1])) n++;
@@ -557,13 +565,51 @@ function updateFilterBadge(){
   const n=activeFilters();
   const badge=$('#filterBadge');
   badge.textContent=n; badge.classList.toggle('show',n>0);
-  const note=$('#activeNote');
-  if(n>0){note.textContent=n+' filter'+(n>1?'s':'')+' active';note.style.display='';}
-  else note.style.display='none';
+}
+
+/* ── Render active filter pills in qfilters row ── */
+function renderActiveTags(){
+  const box=document.getElementById('atags');
+  box.innerHTML='';
+  function pill(label,removeFn){
+    const s=document.createElement('span');
+    s.className='atag';
+    const x=document.createElement('button');
+    x.className='atag-x'; x.textContent='×'; x.title='Remove';
+    x.onclick=e=>{e.stopPropagation();removeFn();};
+    s.append(document.createTextNode(label+' '),x);
+    box.appendChild(s);
+  }
+  const k=+$('#karmaFloor').value;
+  if(k>0) pill(k.toLocaleString()+'+ karma',()=>{$('#karmaFloor').value=0;syncPillStates();update();});
+  const opts=[...$('#yearMin').options].map(o=>o.value);
+  if(opts.length){
+    const yr1=$('#yearMin').value,yr2=$('#yearMax').value;
+    const isAll=yr1===opts[0]&&yr2===opts[opts.length-1];
+    if(!isAll){
+      let lbl=yr1+(yr1!==yr2?'–'+yr2:'');
+      document.querySelectorAll('.era-btn').forEach(b=>{if(b.classList.contains('active')&&b.dataset.y1!=='')lbl=b.childNodes[0].textContent.trim();});
+      pill(lbl,()=>{$('#yearMin').value=opts[0];$('#yearMax').value=opts[opts.length-1];syncPillStates();update();});
+    }
+  }
+  const cat=$('#catSel').value;
+  if(cat) pill(cat,()=>{$('#catSel').value='';update();});
+  const auth=$('#authorFilter').value.trim();
+  if(auth) pill('by: '+auth,()=>{$('#authorFilter').value='';update();});
+  const tag=$('#tagSel').value;
+  if(tag) pill('tag: '+tag,()=>{$('#tagSel').value='';update();});
+  const sort=$('#sortSel').value;
+  const sortNames={karma:'Top karma',pct:'Percentile',date_desc:'Newest',date_asc:'Oldest',comments:'Most discussed',title:'A→Z'};
+  if(sort&&sort!=='relevance') pill(sortNames[sort]||sort,()=>{$('#sortSel').value='relevance';syncPillStates();update();});
+  if($('#bmOnly').checked) pill('Bookmarked',()=>{$('#bmOnly').checked=false;update();});
+  ACTIVE_TAGS.forEach(w=>pill(w,()=>{ACTIVE_TAGS.delete(w);update();}));
+  // reflect active state on word-tag chips
+  document.querySelectorAll('.chip[data-tag]').forEach(b=>b.classList.toggle('chip-on',ACTIVE_TAGS.has(b.dataset.tag)));
 }
 
 /* ── Clear all filters ── */
 function clearAllFilters(){
+  ACTIVE_TAGS.clear();
   $('#search').value='';
   $('#karmaFloor').value=0;
   const opts=[...$('#yearMin').options].map(o=>o.value);
@@ -598,6 +644,7 @@ const CURATED=[
   {label:'Best-of Lists & Collections',desc:'Curated megalists — best books, papers, videos on every subject (27 posts)',ids:['xg3hXCYQPJkwHyik2','7hFeMWC6Y5eaSixbD','SXJGSPeQWbACveJhs','CZQYP7BBY4r9bdxtY','ttGbpJQ8shBi8hDhh','zHS4FJhByRjqsuH4o','HLJMyd4ncE3kvjwhe','LTHhmnzP6FLtSJzJr','Q2PdrjowtXkYQ5whW','wHfseCBgYSiA9Nz47','kFRn77GkKdFvccAFf','BXW2bqxmYbLuBrm7E','HJeD6XbMGEfcrx3mD','Z4LXJBuWKkkvj7NXH','Ek72rktvMrz69HBTL','hswzBzHSMGxz8rcXg','dHYxnSgMDeveovLuv','zaWnu3PxP4YTYiuCm','TecsCZ7w8s4e2umm4','JSND48qS5XTMFuZo8','KC2CjmmKM4jLZGA4L','fnxKyXjj4bHia6Gcd','P8frBu55n5FkGPm9i','Sx6SBmyut73u6atgB','xAsviBJGSBBtgBiCw','ZFMqBSX8CnpAwmWes','6SAGNZ9t9iqik3spz']},
 ];
 let CURATED_IDS=null, CURATED_LABEL='';
+const ACTIVE_TAGS=new Set();
 
 /* ── Tab switching ── */
 let ACTIVE_TAB='search';
@@ -685,14 +732,14 @@ function buildQuickFilters(){
   div.className='qf-div'; row.appendChild(div);
   STARTER_TAGS.forEach(w=>{
     const b=document.createElement('button');
-    b.className='chip'; b.textContent=w;
-    b.onclick=()=>{$('#search').value=w;update();};
+    b.className='chip'; b.dataset.tag=w; b.textContent=w;
+    b.onclick=()=>{
+      if(ACTIVE_TAGS.has(w)) ACTIVE_TAGS.delete(w);
+      else ACTIVE_TAGS.add(w);
+      update();
+    };
     row.appendChild(b);
   });
-  const clr=document.createElement('button');
-  clr.className='clear-btn'; clr.textContent='Clear all filters';
-  clr.onclick=clearAllFilters;
-  row.appendChild(clr);
 }
 
 /* ── Auto-fetch CSV with progress ── */
@@ -1026,7 +1073,8 @@ function searchScore(o,tok,expand){
 
 /* ---------- Main update pipeline ---------- */
 function update(){
-  const q=$('#search').value.trim();
+  const raw=$('#search').value.trim();
+  const q=[raw,...ACTIVE_TAGS].filter(Boolean).join(' ');
   const tok=tokenize(q);
   const kFloor=+$('#karmaFloor').value;
   const yMin=+$('#yearMin').value, yMax=+$('#yearMax').value;
@@ -1085,6 +1133,7 @@ function update(){
   $('#bmCount').textContent=BOOKMARKS.size;
   serializeState();
   updateFilterBadge();
+  renderActiveTags();
   saveSettings();
 }
 

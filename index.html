@@ -643,6 +643,7 @@ const CURATED=[
 ];
 let CURATED_IDS=null, CURATED_LABEL='';
 const ACTIVE_TAGS=new Set();
+let CLASSIFY_DONE=false; // true after background classify finishes; guards saveSettings
 
 /* ── Tab switching ── */
 let ACTIVE_TAB='search';
@@ -770,13 +771,13 @@ async function autoLoad(){
     let offset=0; for(const c of chunks){bytes.set(c,offset);offset+=c.length;}
     const text=new TextDecoder().decode(bytes);
     fill.style.width='100%';
-    ingest(text);
-    if(DATA_LABEL) $('#dataDate').textContent='data: '+DATA_LABEL;
-    else{
-      const newest=ROWS.reduce((mx,r)=>r.Date>mx?r.Date:mx,'');
-      if(newest) $('#dataDate').textContent='data through '+newest.slice(0,7);
-    }
-    $('#loadScreen').style.display='none';
+    ingest(text).catch(e=>{
+      err.innerHTML='<b>Could not load data.</b><br>'+e.message+'<br><br>Make sure <code>'+DATA_URL+'</code> exists and this page is served from an HTTP server (not opened as a file:// URL).';
+      err.style.display='';
+      fill.style.width='0';
+      note.textContent='';
+      $('#loadScreen').style.display='';
+    });
   }catch(e){
     err.innerHTML='<b>Could not load data.</b><br>'+e.message+'<br><br>Make sure <code>'+DATA_URL+'</code> exists and this page is served from an HTTP server (not opened as a file:// URL).';
     err.style.display='';
@@ -965,7 +966,7 @@ function classify(title,tags){
 }
 
 /* ---------- Load & prep ---------- */
-function ingest(text){
+async function ingest(text){
   const grid=parseCSV(text);
   const header=grid[0].map(h=>h.trim());
   const missing=REQUIRED.filter(c=>!header.includes(c));
@@ -982,11 +983,11 @@ function ingest(text){
     };
     o._t=(o.Title+' '+o.Author+' '+o.Tags).toLowerCase();
     o._titleLow=o.Title.toLowerCase();
-    o._cat=classify(o.Title,o.Tags);
+    o._cat=''; // filled in background below
     o._words=o._titleLow.match(/[a-z][a-z'-]{2,}/g)||[];
     ROWS.push(o);
   }
-  // vocab + per-year karma
+  // vocab + per-year karma (fast — no classify yet)
   YEAR_KARMA={};
   for(const o of ROWS){
     for(const w of o._words) VOCAB.add(w);
@@ -999,14 +1000,28 @@ function ingest(text){
     while(lo<hi){const m=(lo+hi)>>1; if(arr[m]<v) lo=m+1; else hi=m;}
     o._pct=arr.length>1? lo/(arr.length-1):1;
   }
-  buildControls();
+  // ── Show app immediately ──
+  buildControls();   // builds year / author / tag controls; cat dropdown filled later
   buildQuickFilters();
   buildCollPage();
+  if(DATA_LABEL) $('#dataDate').textContent='data: '+DATA_LABEL;
+  else{const newest=ROWS.reduce((mx,r)=>r.Date>mx?r.Date:mx,'');if(newest)$('#dataDate').textContent='data through '+newest.slice(0,7);}
+  $('#loadScreen').style.display='none';
   $('#app').style.display='flex';
-  deserializeState();   // URL hash takes priority over localStorage
-  restoreSettings();    // fills in any remaining slots localStorage remembers
+  deserializeState();
+  restoreSettings();
   syncPillStates();
   update();
+  // ── Classify in background (3 000 rows per frame) ──
+  const catPending=new URLSearchParams(location.hash.slice(1)).get('cat')||'';
+  const BATCH=3000;
+  for(let i=0;i<ROWS.length;i+=BATCH){
+    const end=Math.min(i+BATCH,ROWS.length);
+    for(let j=i;j<end;j++) ROWS[j]._cat=classify(ROWS[j].Title,ROWS[j].Tags);
+    await new Promise(r=>setTimeout(r,0)); // yield to browser between batches
+  }
+  // ── Populate Theme dropdown now that classify is done ──
+  buildCatDropdown(catPending);
 }
 
 /* ---------- Build sidebar controls from data ---------- */
@@ -1016,11 +1031,6 @@ function buildControls(){
   yMin.innerHTML=''; yMax.innerHTML='';
   years.forEach(y=>{yMin.add(new Option(y,y));yMax.add(new Option(y,y));});
   yMin.value=years[0]; yMax.value=years[years.length-1];
-
-
-  // categories
-  const cats=[...new Set(ROWS.map(r=>r._cat))].sort();
-  const cs=$('#catSel'); cats.forEach(c=>cs.add(new Option(c,c)));
   // tags (top 60 by freq)
   const tf={}; ROWS.forEach(r=>r.Tags.split(',').forEach(t=>{t=t.trim();if(t)tf[t]=(tf[t]||0)+1;}));
   const topTags=Object.entries(tf).sort((a,b)=>b[1]-a[1]).slice(0,60);
@@ -1032,6 +1042,22 @@ function buildControls(){
     const opt=document.createElement('option'); opt.value=a; al.appendChild(opt);
   });
   $('#bmCount').textContent=BOOKMARKS.size;
+  // Theme dropdown placeholder — populated after background classify finishes
+  const cs=$('#catSel');
+  cs.innerHTML='<option value="">All themes</option>';
+  const ph=new Option('Indexing…','_loading');
+  ph.disabled=true; cs.appendChild(ph);
+}
+function buildCatDropdown(restoreCat){
+  CLASSIFY_DONE=true;
+  const cats=[...new Set(ROWS.map(r=>r._cat).filter(Boolean))].sort();
+  const cs=$('#catSel');
+  cs.innerHTML='<option value="">All themes</option>';
+  cats.forEach(c=>cs.add(new Option(c,c)));
+  // Restore theme: prefer URL param, then localStorage
+  let toRestore=restoreCat;
+  if(!toRestore){try{toRestore=JSON.parse(localStorage.getItem('lw_settings')||'{}').cat||'';}catch(_){}}
+  if(toRestore){cs.value=toRestore;if(cs.value===toRestore)update();}
 }
 
 /* ---------- Search ---------- */
@@ -1306,9 +1332,16 @@ function closePanel(){$('#overlay').classList.remove('show');}
 
 /* ---------- Settings persistence ---------- */
 function saveSettings(){
-  localStorage.setItem('lw_settings',JSON.stringify({
-    k:$('#karmaFloor').value,sort:$('#sortSel').value,cat:$('#catSel').value
-  }));
+  try{
+    const s={k:$('#karmaFloor').value,sort:$('#sortSel').value};
+    if(CLASSIFY_DONE){
+      s.cat=$('#catSel').value;
+    } else {
+      // Preserve any saved cat from previous session until classify finishes
+      try{const p=JSON.parse(localStorage.getItem('lw_settings')||'{}');if(p.cat)s.cat=p.cat;}catch(_){}
+    }
+    localStorage.setItem('lw_settings',JSON.stringify(s));
+  }catch(_){}
 }
 function restoreSettings(){
   try{

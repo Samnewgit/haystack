@@ -244,7 +244,7 @@ input[type=range]{width:100%;accent-color:var(--pine)}
 .atag{display:inline-flex;align-items:center;gap:4px;background:var(--pine);color:#fff;border-radius:20px;padding:3px 5px 3px 9px;font-size:11.5px;white-space:nowrap;line-height:1}
 .atag-x{background:transparent;border:none;color:rgba(255,255,255,.75);font-size:14px;line-height:1;cursor:pointer;padding:0 3px;border-radius:10px;transition:.1s}
 .atag-x:hover{color:#fff;background:rgba(0,0,0,.2)}
-.chip.chip-on{background:var(--pine);color:#fff}
+
 /* Collections */
 .coll-btn{width:100%;text-align:left;background:var(--raised-2);border:1px solid var(--line);border-radius:7px;padding:8px 11px;margin-bottom:5px;font-size:12.5px;color:var(--ink);transition:.12s;cursor:pointer;line-height:1.3}
 .coll-btn:hover{border-color:var(--pine);color:var(--pine)}
@@ -603,8 +603,6 @@ function renderActiveTags(){
   if(sort&&sort!=='relevance') pill(sortNames[sort]||sort,()=>{$('#sortSel').value='relevance';syncPillStates();update();});
   if($('#bmOnly').checked) pill('Bookmarked',()=>{$('#bmOnly').checked=false;update();});
   ACTIVE_TAGS.forEach(w=>pill(w,()=>{ACTIVE_TAGS.delete(w);update();}));
-  // reflect active state on word-tag chips
-  document.querySelectorAll('.chip[data-tag]').forEach(b=>b.classList.toggle('chip-on',ACTIVE_TAGS.has(b.dataset.tag)));
 }
 
 /* ── Clear all filters ── */
@@ -732,7 +730,7 @@ function buildQuickFilters(){
   div.className='qf-div'; row.appendChild(div);
   STARTER_TAGS.forEach(w=>{
     const b=document.createElement('button');
-    b.className='chip'; b.dataset.tag=w; b.textContent=w;
+    b.className='qchip'; b.dataset.tag=w; b.textContent=w;
     b.onclick=()=>{
       if(ACTIVE_TAGS.has(w)) ACTIVE_TAGS.delete(w);
       else ACTIVE_TAGS.add(w);
